@@ -3,15 +3,18 @@ import 'package:example/examples/simple_form.dart';
 import 'package:example/examples/dynamic_control.dart';
 import 'package:flutter/material.dart';
 
+import 'examples/with_initial_values.dart';
+
 void main() {
   runApp(MyApp());
 }
 
 final _routes = {
-  "/": (BuildContext context) => Examples(),
-  "Simple Form": (BuildContext context) => SimpleForm(),
-  "Live Update": (BuildContext context) => LiveUpdate(),
-  "Dynamic field value control": (BuildContext context) => DynamicControl(),
+  "/": (BuildContext _) => Examples(),
+  "Simple Form": (BuildContext _) => SimpleForm(),
+  "Live Update": (BuildContext _) => LiveUpdate(),
+  "Dynamic field value control": (BuildContext _) => DynamicControl(),
+  "Initial values and reset button": (BuildContext _) => WithInitialValues(),
 };
 
 class MyApp extends StatelessWidget {

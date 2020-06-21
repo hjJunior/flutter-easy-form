@@ -39,7 +39,11 @@ class LiveUpdateFormContent extends StatelessWidget {
           builder: (context, snapshot) {
             return Text(snapshot?.data?.toString() ?? "No interactions yet");
           },
-        )
+        ),
+        RaisedButton(
+          onPressed: context.easyForm.resetForm,
+          child: Text("Reset form"),
+        ),
       ],
     );
   }
