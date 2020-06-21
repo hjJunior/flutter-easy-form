@@ -63,6 +63,7 @@ class EasyFormState extends State<EasyForm> {
   void resetForm() {
     _fields.forEach((key, _) {
       setFieldValue(key, initialValueFor(key));
+      field(key).onValidation(null);
     });
   }
 
