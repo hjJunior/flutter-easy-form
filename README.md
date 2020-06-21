@@ -1,1 +1,1 @@
-./easy-form/README.md
+easy_form/README.md
