@@ -1,4 +1,4 @@
-import 'package:easy_form/easy_form.dart';
+import 'package:flutter_easy_form/flutter_easy_form.dart';
 import 'package:flutter/material.dart';
 
 class SimpleForm extends StatelessWidget {

@@ -1,4 +1,4 @@
-# easy_form
+# Flutter EasyForm
 
 A new Flutter package project.
 

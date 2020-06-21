@@ -1,3 +1,9 @@
-## [0.0.1] - TODO: Add release date.
+## [0.0.1-rc] - Initial Release
 
-* TODO: Describe initial release.
+- Extensible and easy API to create new fields
+- Dynamic field value control from any child
+- Initial values and reset form option
+- Live update: Rebuild your widgets in realtime when any change happens
+- Extensible API to create reusable async and sync validations rule for field
+- Dynamic error setter
+- Easy access to any field from any child

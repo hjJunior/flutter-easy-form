@@ -1,4 +1,4 @@
-library easy_form;
+library flutter_easy_form;
 
 export 'src/easy_form.dart';
 export 'src/easy_form_context.dart';

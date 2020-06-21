@@ -1,8 +1,7 @@
-name: easy_form
+name: flutter_easy_form
 description: A easy way to build forms with Flutter.
-version: 0.0.1
-author:
-homepage:
+version: 0.0.1-rc
+repository: https://github.com/hjJunior/flutter-easy-form
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
