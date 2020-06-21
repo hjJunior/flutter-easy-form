@@ -28,6 +28,7 @@ class _EasyTextFieldState extends State<EasyTextField>
   void initState() {
     registerThisField();
     _configureRenderElement();
+    _configureListeners();
     super.initState();
   }
 
@@ -47,9 +48,18 @@ class _EasyTextFieldState extends State<EasyTextField>
     );
   }
 
+  void _configureListeners() {
+    textController.addListener(notifyChange);
+  }
+
+  void _disposeTextController() {
+    textController.removeListener(notifyChange);
+    textController.dispose();
+  }
+
   @override
   void dispose() {
-    textController.dispose();
+    _disposeTextController();
     super.dispose();
   }
 
