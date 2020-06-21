@@ -4,11 +4,15 @@ class TextFieldFactory {
   static TextField copyFromWith(
     TextField textField, {
     @required TextEditingController controller,
+    String errorText,
   }) {
     return TextField(
       controller: controller,
       focusNode: textField.focusNode,
-      decoration: textField.decoration,
+      decoration: InputDecorationFactory.copyFromWith(
+        textField.decoration,
+        errorText: errorText,
+      ),
       keyboardType: textField.keyboardType,
       textInputAction: textField.textInputAction,
       textCapitalization: textField.textCapitalization,
@@ -49,6 +53,59 @@ class TextFieldFactory {
       buildCounter: textField.buildCounter,
       scrollPhysics: textField.scrollPhysics,
       scrollController: textField.scrollController,
+    );
+  }
+}
+
+class InputDecorationFactory {
+  static InputDecoration copyFromWith(
+    InputDecoration inputDecoration, {
+    String errorText,
+  }) {
+    return InputDecoration(
+      icon: inputDecoration.icon,
+      labelText: inputDecoration.labelText,
+      labelStyle: inputDecoration.labelStyle,
+      helperText: inputDecoration.helperText,
+      helperStyle: inputDecoration.helperStyle,
+      helperMaxLines: inputDecoration.helperMaxLines,
+      hintText: inputDecoration.hintText,
+      hintStyle: inputDecoration.hintStyle,
+      hintMaxLines: inputDecoration.hintMaxLines,
+      errorText: inputDecoration.errorText ?? errorText,
+      errorStyle: inputDecoration.errorStyle,
+      errorMaxLines: inputDecoration.errorMaxLines,
+      hasFloatingPlaceholder: inputDecoration.hasFloatingPlaceholder,
+      floatingLabelBehavior: inputDecoration.floatingLabelBehavior,
+      isCollapsed: inputDecoration.isCollapsed,
+      isDense: inputDecoration.isDense,
+      contentPadding: inputDecoration.contentPadding,
+      prefixIcon: inputDecoration.prefixIcon,
+      prefixIconConstraints: inputDecoration.prefixIconConstraints,
+      prefix: inputDecoration.prefix,
+      prefixText: inputDecoration.prefixText,
+      prefixStyle: inputDecoration.prefixStyle,
+      suffixIcon: inputDecoration.suffixIcon,
+      suffix: inputDecoration.suffix,
+      suffixText: inputDecoration.suffixText,
+      suffixStyle: inputDecoration.suffixStyle,
+      suffixIconConstraints: inputDecoration.suffixIconConstraints,
+      counter: inputDecoration.counter,
+      counterText: inputDecoration.counterText,
+      counterStyle: inputDecoration.counterStyle,
+      filled: inputDecoration.filled,
+      fillColor: inputDecoration.fillColor,
+      focusColor: inputDecoration.focusColor,
+      hoverColor: inputDecoration.hoverColor,
+      errorBorder: inputDecoration.errorBorder,
+      focusedBorder: inputDecoration.focusedBorder,
+      focusedErrorBorder: inputDecoration.focusedErrorBorder,
+      disabledBorder: inputDecoration.disabledBorder,
+      enabledBorder: inputDecoration.enabledBorder,
+      border: inputDecoration.border,
+      enabled: inputDecoration.enabled,
+      semanticCounterText: inputDecoration.semanticCounterText,
+      alignLabelWithHint: inputDecoration.alignLabelWithHint,
     );
   }
 }
