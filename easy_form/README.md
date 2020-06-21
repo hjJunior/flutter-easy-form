@@ -12,3 +12,5 @@
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/hjJunior/flutter-easy-form)
 [![Discord](https://img.shields.io/discord/724058478766850119?label=chat&style=flat)](https://discord.gg/gDgQDjX)
 ![GitHub stars](https://img.shields.io/github/stars/hjJunior/flutter-easy-form?style=social)
+![GitHub forks](https://img.shields.io/github/forks/hjJunior/flutter-easy-form?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/hjJunior/flutter-easy-form?style=social)
