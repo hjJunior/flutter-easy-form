@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'easy_form_field.dart';
@@ -16,12 +18,21 @@ class EasyForm extends StatefulWidget {
 }
 
 class EasyFormState extends State<EasyForm> {
-  Map<String, EasyFormField> _fields = {};
+  final _changesCtrl = StreamController<Map<String, dynamic>>();
+  final Map<String, EasyFormField> _fields = {};
 
   @override
   Widget build(BuildContext context) {
     return widget.child;
   }
+
+  @override
+  void dispose() {
+    _changesCtrl.close();
+    super.dispose();
+  }
+
+  Stream<Map<String, dynamic>> get onChange => _changesCtrl.stream;
 
   void registerField(EasyFormField field) {
     _fields[field.attributeName] = field;
@@ -33,6 +44,11 @@ class EasyFormState extends State<EasyForm> {
 
   void setFieldValue<T>(String attributeName, T value) {
     _fields[attributeName].value = value;
+    notifyChange();
+  }
+
+  void notifyChange() {
+    _changesCtrl.sink.add(values);
   }
 
   T getFieldValue<T>(String attributeName) {

@@ -1,9 +1,18 @@
-import 'package:easy_form/easy_form.dart';
+import 'package:example/examples/live_update.dart';
+import 'package:example/examples/simple_form.dart';
+import 'package:example/examples/dynamic_control.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(MyApp());
 }
+
+final _routes = {
+  "/": (BuildContext context) => Examples(),
+  "Simple Form": (BuildContext context) => SimpleForm(),
+  "Live Update": (BuildContext context) => LiveUpdate(),
+  "Dynamic field value control": (BuildContext context) => DynamicControl(),
+};
 
 class MyApp extends StatelessWidget {
   @override
@@ -14,73 +23,32 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(),
+      routes: _routes,
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class Examples extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return EasyForm(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("EasyForm"),
-        ),
-        body: YourForm(),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("EasyForm - Examples"),
       ),
-    );
-  }
-}
+      body: ListView.builder(
+        itemCount: _routes.values.length - 1,
+        itemBuilder: (context, index) {
+          final page = _routes.keys.elementAt(index + 1);
 
-class YourForm extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final easyForm = context.easyForm;
-
-    return ListView(
-      padding: EdgeInsets.all(10),
-      children: <Widget>[
-        EasyTextField(
-          attribute: 'name',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Your name"),
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            FlatButton(
-              onPressed: () {
-                easyForm.setFieldValue("email", easyForm.getFieldValue("name"));
-              },
-              child: Icon(Icons.arrow_downward),
-            ),
-            Text('Copy text from to'),
-            FlatButton(
-              onPressed: () {
-                easyForm.setFieldValue("name", easyForm.getFieldValue("email"));
-              },
-              child: Icon(Icons.arrow_upward),
-            ),
-          ],
-        ),
-        EasyTextField(
-          attribute: 'email',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Your email"),
-          ),
-        ),
-        FlatButton(
-          child: Text('View values'),
-          onPressed: () {
-            showDialog(context: context, builder: (_) => AlertDialog(
-              title: Text("Form Values"),
-              content: Text(easyForm.values.toString()),
-            ));
-          },
-        )
-      ],
+          return ListTile(
+            onTap: () {
+              Navigator.of(context).pushNamed(page);
+            },
+            title: Text(page),
+            trailing: Icon(Icons.arrow_forward_ios),
+          );
+        },
+      ),
     );
   }
 }

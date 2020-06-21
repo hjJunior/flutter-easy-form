@@ -18,4 +18,8 @@ abstract class EasyFormField<T> {
   void unregisterThisField() {
     easyForm.unregisterField(this);
   }
+
+  void notifyChange() {
+    easyForm.notifyChange();
+  }
 }
