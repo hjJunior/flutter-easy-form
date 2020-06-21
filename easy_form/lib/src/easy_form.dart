@@ -28,6 +28,8 @@ class EasyFormState extends State<EasyForm> {
   final _changesCtrl = StreamController<Map<String, dynamic>>();
   final Map<String, EasyFormField> _fields = {};
 
+  EasyFormField field(String attr) => _fields[attr];
+
   @override
   Widget build(BuildContext context) {
     return widget.child;
@@ -69,7 +71,8 @@ class EasyFormState extends State<EasyForm> {
   }
 
   T getFieldValue<T>(String attributeName) {
-    assert(_fields.containsKey(attributeName), "The $attributeName field is not registered");
+    assert(_fields.containsKey(attributeName),
+        "The $attributeName field is not registered");
 
     return _fields[attributeName].value ?? initialValueFor(attributeName);
   }
@@ -78,5 +81,16 @@ class EasyFormState extends State<EasyForm> {
     return _fields.map((key, field) {
       return MapEntry(key, field.value ?? widget.initialValues[key]);
     });
+  }
+
+  Future<bool> validate() async {
+    for (final fieldName in _fields.keys) {
+      final validation = await field(fieldName).runValidations();
+
+      if (!validation) {
+        return false;
+      }
+    }
+    return true;
   }
 }
