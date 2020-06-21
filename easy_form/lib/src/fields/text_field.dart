@@ -42,6 +42,8 @@ class _EasyTextFieldState extends State<EasyTextField>
   }
 
   void _configureRenderElement() {
+    textController.text = initialValue ?? "";
+
     _renderElement = TextFieldFactory.copyFromWith(
       widget.textField,
       controller: textController,
@@ -66,7 +68,7 @@ class _EasyTextFieldState extends State<EasyTextField>
   @override
   set value(String value) {
     setState(() {
-      textController.text = value;
+      textController.text = value ?? "";
     });
   }
 

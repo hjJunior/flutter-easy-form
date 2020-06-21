@@ -22,4 +22,6 @@ abstract class EasyFormField<T> {
   void notifyChange() {
     easyForm.notifyChange();
   }
+
+  T get initialValue => easyForm.initialValueFor(this.attributeName);
 }

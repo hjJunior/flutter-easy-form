@@ -6,8 +6,15 @@ import 'easy_form_field.dart';
 
 class EasyForm extends StatefulWidget {
   final Widget child;
+  final Map<String, dynamic> initialValues;
 
-  const EasyForm({Key key, this.child}) : super(key: key);
+  const EasyForm({
+    Key key,
+    @required this.child,
+    this.initialValues = const {},
+  })  : assert(initialValues != null),
+        assert(child != null),
+        super(key: key);
 
   @override
   EasyFormState createState() => EasyFormState();
@@ -51,13 +58,25 @@ class EasyFormState extends State<EasyForm> {
     _changesCtrl.sink.add(values);
   }
 
+  void resetForm() {
+    _fields.forEach((key, _) {
+      setFieldValue(key, initialValueFor(key));
+    });
+  }
+
+  T initialValueFor<T>(String attributeName) {
+    return widget.initialValues[attributeName];
+  }
+
   T getFieldValue<T>(String attributeName) {
-    return _fields[attributeName].value;
+    assert(_fields.containsKey(attributeName), "The $attributeName field is not registered");
+
+    return _fields[attributeName].value ?? initialValueFor(attributeName);
   }
 
   Map<String, dynamic> get values {
     return _fields.map((key, field) {
-      return MapEntry(key, field.value);
+      return MapEntry(key, field.value ?? widget.initialValues[key]);
     });
   }
 }
