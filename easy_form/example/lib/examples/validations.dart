@@ -66,6 +66,10 @@ class UsingValidationsFormContent extends StatelessWidget {
               },
               child: Text("Run validation"),
             ),
+            RaisedButton(
+              onPressed: easyForm.resetForm,
+              child: Text("Reset form"),
+            ),
           ],
         ),
       ],
