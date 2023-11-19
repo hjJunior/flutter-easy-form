@@ -1,45 +1,71 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_easy_form/flutter_easy_form.dart';
 
-import 'easy_form.dart';
-import 'easy_form_validation.dart';
+typedef EasyFormFieldBuilder<T> = Widget Function(
+  EasyFormFieldState<T> fieldState,
+  EasyFormState formState,
+);
 
-abstract class EasyFormField<T> {
-  BuildContext get context;
-  String get attributeName;
-  List<EasyFormValidation> get validations => [];
+class EasyFormField<T> extends StatefulWidget {
+  final String attribute;
+  final List<EasyFormValidation> validations;
+  final EasyFormFieldBuilder<T> builder;
+  final TextEditingController? textEditingController;
 
-  set value(T value);
-  T get value;
+  const EasyFormField({
+    super.key,
+    required this.attribute,
+    required this.builder,
+    this.validations = const <EasyFormValidation>[],
+    this.textEditingController,
+  });
 
-  EasyFormState get easyForm =>
-      context.findAncestorStateOfType<EasyFormState>();
+  @override
+  State<EasyFormField> createState() => _EasyFormFieldState<T>();
+}
 
-  void registerThisField() {
-    easyForm.registerField(this);
+class _EasyFormFieldState<T> extends State<EasyFormField> {
+  late EasyFormState easyForm = context.easyForm;
+  EasyFormFieldState<T> get fieldState => easyForm.field<T>(widget.attribute);
+
+  void _registerThisField() {
+    easyForm.registerField(EasyFormFieldState(
+      attribute: widget.attribute,
+      initialValue: easyForm.initialValueFor(widget.attribute),
+      validations: widget.validations,
+      textEditingController: widget.textEditingController,
+      formState: easyForm,
+    ));
   }
 
-  void unregisterThisField() {
-    easyForm.unregisterField(this);
+  @override
+  void initState() {
+    _registerThisField();
+    super.initState();
   }
 
-  void notifyChange() {
-    easyForm.notifyChange();
+  @override
+  void dispose() {
+    easyForm.removeField(widget.attribute);
+    super.dispose();
   }
 
-  T get initialValue => easyForm.initialValueFor(this.attributeName);
+  @override
+  void didChangeDependencies() {
+    if (mounted) {
+      easyForm = context.easyForm;
+    }
 
-  Future<bool> runValidations() async {
-    return validations.fold(true, (previousValidation, validation) async {
-      final validationResult = await validation.run(value, context);
-      onValidation(validationResult);
-
-      return previousValidation && (validationResult == null);
-    });
+    super.didChangeDependencies();
   }
 
-  void onValidation([String error]) {
-    throw UnimplementedError(
-      "Please override this method to allow the usage of validations on custom fields",
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: fieldState,
+      builder: (context, _widget) {
+        return widget.builder(fieldState, easyForm);
+      },
     );
   }
 }

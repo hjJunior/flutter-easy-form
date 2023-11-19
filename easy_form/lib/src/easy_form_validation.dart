@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter_easy_form/flutter_easy_form.dart';
 
 abstract class EasyFormValidation<T> {
-  Future<String> run(T value, BuildContext context);
+  Future<String?> run(T value, EasyFormState formState);
 }

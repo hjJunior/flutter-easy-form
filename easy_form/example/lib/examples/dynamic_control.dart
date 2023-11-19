@@ -23,23 +23,26 @@ class DynamicControlFormContent extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(10),
       children: <Widget>[
-        EasyTextField(
+        EasyFormField(
           attribute: 'name',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Your name"),
-          ),
+          builder: (field, formState) {
+            return TextField(
+              decoration: InputDecoration(hintText: "Your name"),
+              controller: field.textEditingController,
+            );
+          },
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: () {
                 easyForm.setFieldValue("email", easyForm.getFieldValue("name"));
               },
               child: Icon(Icons.arrow_downward),
             ),
             Text('Copy text from to'),
-            FlatButton(
+            TextButton(
               onPressed: () {
                 easyForm.setFieldValue("name", easyForm.getFieldValue("email"));
               },
@@ -47,11 +50,14 @@ class DynamicControlFormContent extends StatelessWidget {
             ),
           ],
         ),
-        EasyTextField(
+        EasyFormField(
           attribute: 'email',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Your email"),
-          ),
+          builder: (field, formState) {
+            return TextField(
+              decoration: InputDecoration(hintText: "Your email"),
+              controller: field.textEditingController,
+            );
+          },
         ),
       ],
     );

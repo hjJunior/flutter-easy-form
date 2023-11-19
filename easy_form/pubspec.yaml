@@ -4,7 +4,7 @@ version: 0.0.1-rc
 repository: https://github.com/hjJunior/flutter-easy-form
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:

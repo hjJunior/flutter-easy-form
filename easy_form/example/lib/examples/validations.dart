@@ -15,9 +15,9 @@ class UsingValidations extends StatelessWidget {
   }
 }
 
-class CustomFormValidation extends EasyFormValidation<String> {
+class CustomFormValidation extends EasyFormValidation<String?> {
   @override
-  Future<String> run(String value, BuildContext context) async {
+  Future<String?> run(String? value, EasyFormState formState) async {
     if (value == null || value.isEmpty) {
       return "The Value is empty";
     }
@@ -33,32 +33,42 @@ class UsingValidationsFormContent extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(10),
       children: <Widget>[
-        EasyTextField(
+        EasyFormField(
           attribute: 'name',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Your name"),
-          ),
           validations: [
             CustomFormValidation(),
           ],
+          builder: (field, formState) {
+            return TextField(
+              decoration: InputDecoration(
+                hintText: "Your name",
+                errorText: field.error,
+              ),
+              controller: field.textEditingController,
+            );
+          },
         ),
         Wrap(
           children: [
-            RaisedButton(
+            ElevatedButton(
               onPressed: () {
-                easyForm.field("name").onValidation("Custom error");
+                easyForm.field("name").error = "Custom error";
               },
               child: Text("Force error"),
             ),
-            SizedBox(width: 10,),
-            RaisedButton(
+            SizedBox(
+              width: 10,
+            ),
+            ElevatedButton(
               onPressed: () {
-                easyForm.field("name").onValidation(null);
+                easyForm.field("name").error = null;
               },
               child: Text("Reset error"),
             ),
-            SizedBox(width: 10,),
-            RaisedButton(
+            SizedBox(
+              width: 10,
+            ),
+            ElevatedButton(
               onPressed: () async {
                 if (await easyForm.validate()) {
                   print("Valid!");
@@ -66,7 +76,7 @@ class UsingValidationsFormContent extends StatelessWidget {
               },
               child: Text("Run validation"),
             ),
-            RaisedButton(
+            ElevatedButton(
               onPressed: easyForm.resetForm,
               child: Text("Reset form"),
             ),

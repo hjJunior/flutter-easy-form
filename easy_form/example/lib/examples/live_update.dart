@@ -21,26 +21,32 @@ class LiveUpdateFormContent extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(10),
       children: <Widget>[
-        EasyTextField(
+        EasyFormField(
           attribute: 'first_name',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "First name"),
-          ),
+          builder: (field, formState) {
+            return TextField(
+              decoration: InputDecoration(hintText: "First name"),
+              controller: field.textEditingController,
+            );
+          },
         ),
-        EasyTextField(
+        EasyFormField(
           attribute: 'last_name',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Last name"),
-          ),
+          builder: (field, formState) {
+            return TextField(
+              decoration: InputDecoration(hintText: "Last name"),
+              controller: field.textEditingController,
+            );
+          },
         ),
         Divider(),
         StreamBuilder<Map<String, dynamic>>(
           stream: context.easyForm.onChange,
           builder: (context, snapshot) {
-            return Text(snapshot?.data?.toString() ?? "No interactions yet");
+            return Text(snapshot.data?.toString() ?? "No interactions yet");
           },
         ),
-        RaisedButton(
+        ElevatedButton(
           onPressed: context.easyForm.resetForm,
           child: Text("Reset form"),
         ),

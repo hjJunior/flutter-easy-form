@@ -5,9 +5,7 @@ class WithInitialValues extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EasyForm(
-      initialValues: {
-        "name": "Initial Name"
-      },
+      initialValues: {"name": "Initial Name"},
       child: Scaffold(
         appBar: AppBar(
           title: Text("With initial values and reset button"),
@@ -24,13 +22,16 @@ class WithInitialValuesFormContent extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(10),
       children: <Widget>[
-        EasyTextField(
+        EasyFormField(
           attribute: 'name',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Your name"),
-          ),
+          builder: (field, formState) {
+            return TextField(
+              decoration: InputDecoration(hintText: "Your name"),
+              controller: field.textEditingController,
+            );
+          },
         ),
-        RaisedButton(
+        ElevatedButton(
           onPressed: context.easyForm.resetForm,
           child: Text("Reset form"),
         ),

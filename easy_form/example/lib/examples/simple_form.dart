@@ -23,19 +23,24 @@ class SimpleFormFormContent extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(10),
       children: <Widget>[
-        EasyTextField(
+        EasyFormField(
           attribute: 'name',
-          textField: TextField(
-            decoration: InputDecoration(hintText: "Your name"),
-          ),
+          builder: (field, formState) {
+            return TextField(
+              decoration: InputDecoration(hintText: "Your name"),
+              controller: field.textEditingController,
+            );
+          },
         ),
-        FlatButton(
+        TextButton(
           child: Text('View values'),
           onPressed: () {
-            showDialog(context: context, builder: (_) => AlertDialog(
-              title: Text("Form Values"),
-              content: Text(easyForm.values.toString()),
-            ));
+            showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                      title: Text("Form Values"),
+                      content: Text(easyForm.values.toString()),
+                    ));
           },
         ),
       ],

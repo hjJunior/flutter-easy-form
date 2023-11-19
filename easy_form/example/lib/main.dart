@@ -1,8 +1,9 @@
-import 'package:example/examples/live_update.dart';
-import 'package:example/examples/simple_form.dart';
-import 'package:example/examples/dynamic_control.dart';
+import 'package:example/examples/dynamic_fields.dart';
 import 'package:flutter/material.dart';
 
+import 'examples/dynamic_control.dart';
+import 'examples/live_update.dart';
+import 'examples/simple_form.dart';
 import 'examples/validations.dart';
 import 'examples/with_initial_values.dart';
 
@@ -17,6 +18,7 @@ final _routes = {
   "Dynamic field value control": (BuildContext _) => DynamicControl(),
   "Initial values and reset button": (BuildContext _) => WithInitialValues(),
   "Using Validations": (BuildContext _) => UsingValidations(),
+  "Dynamic Array": (BuildContext _) => DynamicFields(),
 };
 
 class MyApp extends StatelessWidget {
