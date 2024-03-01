@@ -55,6 +55,8 @@ class EasyFormFieldState<T> with ChangeNotifier {
   }
 
   Future<bool> runValidations() async {
+    error = null;
+
     for (final validation in validations) {
       final result = await validation.run(value, formState);
 
