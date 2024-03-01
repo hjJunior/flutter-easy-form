@@ -83,9 +83,9 @@ class EasyFormState extends State<EasyForm> {
 
   Future<bool> validate() async {
     for (final fieldName in _fields.keys) {
-      final validation = await field(fieldName).runValidations();
+      final valid = await field(fieldName).runValidations();
 
-      if (!validation) {
+      if (!valid) {
         return false;
       }
     }

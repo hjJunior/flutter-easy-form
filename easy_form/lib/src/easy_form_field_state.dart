@@ -64,7 +64,7 @@ class EasyFormFieldState<T> with ChangeNotifier {
       }
     }
 
-    return hasError;
+    return !hasError;
   }
 
   void _registerController() {
