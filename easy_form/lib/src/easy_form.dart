@@ -81,14 +81,20 @@ class EasyFormState extends State<EasyForm> {
     });
   }
 
-  Future<bool> validate() async {
+  Future<bool> validate({bool stopOnFirstError = false}) async {
+    bool allValid = true;
+
     for (final fieldName in _fields.keys) {
       final valid = await field(fieldName).runValidations();
 
       if (!valid) {
+        allValid = valid;
+      }
+
+      if (!valid && stopOnFirstError) {
         return false;
       }
     }
-    return true;
+    return allValid;
   }
 }
