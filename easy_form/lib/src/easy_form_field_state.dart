@@ -28,7 +28,7 @@ class EasyFormFieldState<T> with ChangeNotifier {
   String? get error => _error;
   bool get hasError => error != null;
 
-  bool get _isStringField => initialValue is String || initialValue is String?;
+  bool get _isStringField => initialValue is String;
 
   set value(T newValue) {
     _value = newValue;
