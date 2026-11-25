@@ -52,12 +52,7 @@ class _ArenaFormScreenState extends State<ArenaFormScreen> {
             children: [
               _BoundTextField(control: form.name, label: 'Nome da arena'),
               const SizedBox(height: 8),
-              SwitchListTile(
-                title: const Text('Arena internacional'),
-                value: form.international.value,
-                onChanged: (value) =>
-                    setState(() => form.international.value = value),
-              ),
+              _InternationalSwitch(control: form.international),
               const Divider(height: 32),
               Text('Contatos (${form.contacts.length})',
                   style: Theme.of(context).textTheme.titleMedium),
@@ -122,6 +117,26 @@ class _ArenaFormScreenState extends State<ArenaFormScreen> {
   }
 }
 
+/// A field with no extra resources to manage can extend [FormControlWidget]
+/// directly: the base class handles listening to the control and
+/// rebuilding, so this only has to describe what the field looks like for
+/// its current value.
+class _InternationalSwitch extends FormControlWidget<bool> {
+  const _InternationalSwitch({required super.control});
+
+  @override
+  Widget build(BuildContext context, FormControl<bool> control) {
+    return SwitchListTile(
+      title: const Text('Arena internacional'),
+      value: control.value,
+      onChanged: control.disabled ? null : (value) => control.value = value,
+    );
+  }
+}
+
+/// A text field still needs its own [State] to own a [TextEditingController]
+/// across rebuilds — [FormControlWidget] only standardizes the listening
+/// side, not resources a concrete field may need beyond that.
 class _BoundTextField extends StatefulWidget {
   const _BoundTextField({required this.control, required this.label});
 
