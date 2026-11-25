@@ -1,5 +1,7 @@
 # flutter_easy_form
 
+[![CI](https://github.com/hjJunior/flutter-easy-form/actions/workflows/ci.yml/badge.svg)](https://github.com/hjJunior/flutter-easy-form/actions/workflows/ci.yml)
+
 Typed, class-based forms for Flutter. Declare a form as a plain Dart
 class with real properties — no `Map<String, dynamic>`, no string keys,
 no casts.
