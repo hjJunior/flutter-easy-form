@@ -5,7 +5,7 @@ import '../fixtures.dart';
 
 void main() {
   group('FormArray', () {
-    test('array de controles simples', () {
+    test('array of simple controls', () {
       final tags = FormArray<String, FormControl<String>>(
         create: () => FormControl<String>(initialValue: ''),
       );
@@ -17,7 +17,7 @@ void main() {
       expect(tags.value, ['Beach Tennis']);
     });
 
-    test('array de grupos', () {
+    test('array of groups', () {
       final people = FormArray<Person, PersonForm>(create: PersonForm.new);
 
       people.add();
@@ -28,7 +28,7 @@ void main() {
       expect(people.value.single.name, 'Maria');
     });
 
-    test('adicionar, inserir, remover e reordenar', () {
+    test('add, insert, remove and reorder', () {
       final tags = FormArray<String, FormControl<String>>(
         create: () => FormControl<String>(initialValue: ''),
       );
@@ -37,7 +37,7 @@ void main() {
       tags[0].value = 'a';
       tags.add(); // index 1
       tags[1].value = 'b';
-      tags.insert(1); // novo item vazio no meio
+      tags.insert(1); // new empty item in the middle
       tags[1].value = 'c';
 
       expect(tags.value, ['a', 'c', 'b']);
@@ -49,17 +49,17 @@ void main() {
       expect(tags.value, ['b', 'a']);
     });
 
-    test('validade agregada considerando os itens', () {
+    test('aggregated validity considering the items', () {
       final people = FormArray<Person, PersonForm>(create: PersonForm.new);
       people.add();
 
-      expect(people.invalid, isTrue); // name obrigatório e vazio
+      expect(people.invalid, isTrue); // name is required and empty
 
       people[0].name.value = 'Maria';
       expect(people.valid, isTrue);
     });
 
-    test('propagação de alterações dos itens para o array', () {
+    test('changes from items propagate to the array', () {
       final tags = FormArray<String, FormControl<String>>(
         create: () => FormControl<String>(initialValue: ''),
       );
@@ -68,11 +68,11 @@ void main() {
       var notifications = 0;
       tags.addListener(() => notifications++);
 
-      tags[0].value = 'novo valor';
+      tags[0].value = 'new value';
       expect(notifications, greaterThan(0));
     });
 
-    test('descarte de itens removidos', () {
+    test('removed items are disposed', () {
       final tags = FormArray<String, FormControl<String>>(
         create: () => FormControl<String>(initialValue: ''),
       );
@@ -82,15 +82,15 @@ void main() {
       tags.removeAt(0);
 
       expect(tags.length, 0);
-      expect(() => removed.value = 'ainda vivo?', throwsStateError);
+      expect(() => removed.value = 'still alive?', throwsStateError);
     });
 
-    test('validators próprios do array', () {
+    test('the array\'s own validators', () {
       final people = FormArray<Person, PersonForm>(
         create: PersonForm.new,
         validators: [
           (list) => list.isEmpty
-              ? const ValidationError('Precisa de ao menos uma pessoa')
+              ? const ValidationError('At least one person is required')
               : null,
         ],
       );

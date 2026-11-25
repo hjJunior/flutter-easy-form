@@ -51,13 +51,14 @@ class ContactForm extends FormGroup<Contact, ArenaForm> {
   Contact toValue() => Contact(name: name.value, email: email.value);
 
   @override
-  void validateSelf() {
+  ValidationError? validateSelf() {
     if (context.root.international.value && email.value.isEmpty) {
-      throw const FormValidationException(
+      return const ValidationError(
+        'Email is required for contacts of international arenas',
         code: 'email_required_for_international_arena',
-        message: 'E-mail é obrigatório para contatos de arenas internacionais',
       );
     }
+    return null;
   }
 }
 
@@ -92,12 +93,13 @@ class ArenaForm extends FormGroup<Arena, ArenaForm> {
       );
 
   @override
-  void validateSelf() {
+  ValidationError? validateSelf() {
     if (international.value && contacts.length == 0) {
-      throw const FormValidationException(
+      return const ValidationError(
+        'An international arena requires at least one contact',
         code: 'international_arena_requires_contact',
-        message: 'Arena internacional precisa de ao menos um contato',
       );
     }
+    return null;
   }
 }

@@ -3,24 +3,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FormControl', () {
-    test('valor inicial e valor atualizado', () {
+    test('initial value and updated value', () {
       final control = FormControl<String>(initialValue: 'Maria');
       expect(control.value, 'Maria');
 
-      control.value = 'João';
-      expect(control.value, 'João');
+      control.value = 'John';
+      expect(control.value, 'John');
     });
 
-    test('nulabilidade: T? aceita ausência de initialValue', () {
+    test('nullability: T? accepts a missing initialValue', () {
       final control = FormControl<String?>();
       expect(control.value, isNull);
     });
 
-    test('nulabilidade: T não-nulável exige initialValue', () {
+    test('nullability: non-nullable T requires initialValue', () {
       expect(() => FormControl<String>(), throwsArgumentError);
     });
 
-    test('dirty e pristine', () {
+    test('dirty and pristine', () {
       final control = FormControl<String>(initialValue: 'a');
       expect(control.pristine, isTrue);
       expect(control.dirty, isFalse);
@@ -30,7 +30,7 @@ void main() {
       expect(control.pristine, isFalse);
     });
 
-    test('touched e untouched', () {
+    test('touched and untouched', () {
       final control = FormControl<String>(initialValue: 'a');
       expect(control.untouched, isTrue);
 
@@ -39,14 +39,14 @@ void main() {
       expect(control.untouched, isFalse);
     });
 
-    test('validators e erros', () {
+    test('validators and errors', () {
       final control = FormControl<String>(
         initialValue: '',
         validators: [Validators.required, Validators.minLength(3)],
       );
 
       expect(control.invalid, isTrue);
-      expect(control.errors, contains(const ValidationError('Campo obrigatório', code: 'required')));
+      expect(control.errors, contains(const ValidationError('Required field', code: 'required')));
 
       control.value = 'ab';
       expect(control.errors.single.code, 'minLength');
@@ -55,7 +55,7 @@ void main() {
       expect(control.valid, isTrue);
     });
 
-    test('reset restaura valor inicial, pristine e untouched', () {
+    test('reset restores the initial value, pristine and untouched', () {
       final control = FormControl<String>(initialValue: 'a');
       control.value = 'b';
       control.markAsTouched();
@@ -67,7 +67,7 @@ void main() {
       expect(control.untouched, isTrue);
     });
 
-    test('desabilitar remove os erros, habilitar os traz de volta', () {
+    test('disabling clears the errors, enabling brings them back', () {
       final control = FormControl<String>(
         initialValue: '',
         validators: [Validators.required],
@@ -82,7 +82,7 @@ void main() {
       expect(control.invalid, isTrue);
     });
 
-    test('notifica listeners ao alterar o valor', () {
+    test('notifies listeners when the value changes', () {
       final control = FormControl<String>(initialValue: 'a');
       var notifications = 0;
       control.addListener(() => notifications++);
@@ -90,7 +90,7 @@ void main() {
       control.value = 'b';
       expect(notifications, 1);
 
-      // Mesmo valor não deve gerar notificação duplicada.
+      // Setting the same value again should not notify twice.
       control.value = 'b';
       expect(notifications, 1);
     });
