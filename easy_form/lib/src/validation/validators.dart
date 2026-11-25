@@ -12,10 +12,10 @@ class Validators {
 
   static ValidationError? required(Object? value) {
     if (value == null) {
-      return const ValidationError('Campo obrigatório', code: 'required');
+      return const ValidationError('Required field', code: 'required');
     }
     if (value is String && value.trim().isEmpty) {
-      return const ValidationError('Campo obrigatório', code: 'required');
+      return const ValidationError('Required field', code: 'required');
     }
     return null;
   }
@@ -23,7 +23,7 @@ class Validators {
   static Validator<String> minLength(int min) {
     return (value) {
       if (value.length < min) {
-        return ValidationError('Deve ter ao menos $min caracteres', code: 'minLength');
+        return ValidationError('Must be at least $min characters long', code: 'minLength');
       }
       return null;
     };
@@ -32,7 +32,7 @@ class Validators {
   static Validator<String> maxLength(int max) {
     return (value) {
       if (value.length > max) {
-        return ValidationError('Deve ter no máximo $max caracteres', code: 'maxLength');
+        return ValidationError('Must be at most $max characters long', code: 'maxLength');
       }
       return null;
     };
@@ -41,7 +41,7 @@ class Validators {
   static Validator<num> min(num min) {
     return (value) {
       if (value < min) {
-        return ValidationError('O valor mínimo é $min', code: 'min');
+        return ValidationError('The minimum value is $min', code: 'min');
       }
       return null;
     };
@@ -50,7 +50,7 @@ class Validators {
   static Validator<num> max(num max) {
     return (value) {
       if (value > max) {
-        return ValidationError('O valor máximo é $max', code: 'max');
+        return ValidationError('The maximum value is $max', code: 'max');
       }
       return null;
     };
@@ -60,12 +60,12 @@ class Validators {
 
   static ValidationError? email(String value) {
     if (!_emailPattern.hasMatch(value)) {
-      return const ValidationError('E-mail inválido', code: 'email');
+      return const ValidationError('Invalid email', code: 'email');
     }
     return null;
   }
 
-  static Validator<String> pattern(RegExp regExp, {String message = 'Formato inválido'}) {
+  static Validator<String> pattern(RegExp regExp, {String message = 'Invalid format'}) {
     return (value) {
       if (!regExp.hasMatch(value)) {
         return ValidationError(message, code: 'pattern');

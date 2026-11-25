@@ -45,11 +45,11 @@ import 'form_node.dart';
 ///   Court toValue() => Court(capacity: capacity.value);
 ///
 ///   @override
-///   ValidationError? validateSelf() {
+///   List<ValidationError> validateSelf() {
 ///     if (context.root.isBeachArena.value && capacity.value > 20) {
-///       return const ValidationError('Beach courts hold at most 20 people', code: 'invalid_capacity');
+///       return [const ValidationError('Beach courts hold at most 20 people', code: 'invalid_capacity')];
 ///     }
-///     return null;
+///     return const [];
 ///   }
 /// }
 /// ```
@@ -77,18 +77,15 @@ abstract class FormGroup<T, TRoot> extends FormNode<T> {
   T get value => toValue();
 
   /// Override to validate this group's own fields against each other, or
-  /// against [context.root]. Returns `null` when valid, or a single
-  /// [ValidationError] describing the violation — the same convention as
-  /// [FormControl]'s and [FormArray]'s own validators, just without a
-  /// value parameter, since the fields to check are read through `this`.
-  ValidationError? validateSelf() => null;
+  /// against [context.root]. Returns every violation found — empty when
+  /// valid. A list, rather than a single nullable [ValidationError], so a
+  /// group can report more than one cross-field rule failing at once, the
+  /// same way its children can each contribute their own errors.
+  List<ValidationError> validateSelf() => const [];
 
   @override
   List<ValidationError> get errors {
     if (disabled) return const [];
-    return [
-      ...childrenErrors,
-      if (validateSelf() case final error?) error,
-    ];
+    return [...childrenErrors, ...validateSelf()];
   }
 }
