@@ -67,6 +67,43 @@ contacts.add();
 contacts[0].name.value = 'Maria';
 ```
 
+`insert(index)`, `removeAt(index)` and `move(oldIndex, newIndex)` round out the
+usual list operations. `setAt(index, item)` swaps in a different node
+outright — e.g. one already built elsewhere with its own values, rather
+than `create`'s defaults.
+
+## Loading an existing model
+
+There's no `fromValue`/`patchValue` in this library: `FormGroup` is a plain
+Dart class, so a plain function that sets each control's `value` already
+works, and already notifies:
+
+```dart
+void applyArena(ArenaForm form, Arena arena) {
+  form.name.value = arena.name;
+  form.international.value = arena.international;
+  for (final contact in arena.contacts) {
+    form.contacts.add();
+    form.contacts.last.name.value = contact.name;
+    form.contacts.last.email.value = contact.email;
+  }
+}
+```
+
+The one thing the library does for you: after loading, call
+`form.markAsInitial()` so `reset()` goes back to what you just loaded
+instead of the form's original, empty state. It rebases every
+descendant's `initialValue` to its current value and clears `dirty`,
+recursively.
+
+```dart
+applyArena(form, existingArena);
+form.markAsInitial();
+
+form.name.value = 'something else';
+form.reset(); // back to existingArena.name, not ''
+```
+
 ## Cross-field validation, including against the root form
 
 A `FormGroup`'s own fields are validated together by overriding

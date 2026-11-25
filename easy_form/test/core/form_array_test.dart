@@ -28,6 +28,23 @@ void main() {
       expect(people.value.single.name, 'Maria');
     });
 
+    test('setAt replaces an item outright and disposes the old one', () {
+      final tags = FormArray<String, FormControl<String>>(
+        create: () => FormControl<String>(initialValue: ''),
+      );
+      tags.add();
+      tags[0].value = 'a';
+      final old = tags[0];
+      final replacement = FormControl<String>(initialValue: 'replacement');
+
+      tags.setAt(0, replacement);
+
+      expect(tags.length, 1);
+      expect(tags[0], same(replacement));
+      expect(tags.value, ['replacement']);
+      expect(() => old.value = 'still alive?', throwsStateError);
+    });
+
     test('add, insert, remove and reorder', () {
       final tags = FormArray<String, FormControl<String>>(
         create: () => FormControl<String>(initialValue: ''),

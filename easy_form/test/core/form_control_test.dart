@@ -67,6 +67,20 @@ void main() {
       expect(control.untouched, isTrue);
     });
 
+    test('markAsInitial rebases reset() to the current value', () {
+      final control = FormControl<String>(initialValue: 'a');
+      control.value = 'b';
+      expect(control.dirty, isTrue);
+
+      control.markAsInitial();
+      expect(control.dirty, isFalse);
+      expect(control.initialValue, 'b');
+
+      control.value = 'c';
+      control.reset();
+      expect(control.value, 'b');
+    });
+
     test('disabling clears the errors, enabling brings them back', () {
       final control = FormControl<String>(
         initialValue: '',

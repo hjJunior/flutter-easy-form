@@ -16,7 +16,11 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
   one at once), including rules that reach the root form through
   `FormContext<TRoot>` (`context.root`), with no casts.
 - `FormArray<T, C>`: an ordered, dynamic collection of controls or
-  groups (`add`/`insert`/`removeAt`/`move`), with its own validators.
+  groups (`add`/`insert`/`removeAt`/`move`/`setAt`), with its own validators.
+- `FormNode.markAsInitial()`: rebases `reset()` to the node's (and every
+  descendant's) current value, for after loading an existing model by
+  hand — there's no `fromValue`/`patchValue` in this library, since a
+  plain function setting each control's `value` already works.
 - Ready-made validators: `required`, `minLength`, `maxLength`, `min`,
   `max`, `email`, `pattern`, `custom`.
 - `FormControlWidget<T>`: base class for a field with no extra resource

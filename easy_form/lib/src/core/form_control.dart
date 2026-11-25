@@ -11,12 +11,15 @@ class FormControl<T> extends FormNode<T> {
   FormControl({
     T? initialValue,
     this.validators = const [],
-  }) : initialValue = initialValue ?? _fallbackValue<T>() {
-    _value = this.initialValue;
+  }) : _initialValue = initialValue ?? _fallbackValue<T>() {
+    _value = _initialValue;
   }
 
-  /// The value this control is restored to by [reset].
-  final T initialValue;
+  T _initialValue;
+
+  /// The value this control is restored to by [reset] — initially the
+  /// value passed to the constructor, until [markAsInitial] rebases it.
+  T get initialValue => _initialValue;
 
   final List<Validator<T>> validators;
 
@@ -45,6 +48,12 @@ class FormControl<T> extends FormNode<T> {
   void reset() {
     _value = initialValue;
     super.reset();
+  }
+
+  @override
+  void markAsInitial() {
+    _initialValue = _value;
+    super.markAsInitial();
   }
 
   static T _fallbackValue<T>() {

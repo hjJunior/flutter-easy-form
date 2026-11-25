@@ -67,6 +67,21 @@ abstract class FormNode<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Makes this node's current value (and, transitively, every
+  /// descendant's) the new baseline [reset] returns to, and clears
+  /// [dirty]. Useful after loading an existing model into the form by
+  /// hand (there's no `fromValue`/`patchValue` in this library — a plain
+  /// Dart setter on each control already works and already notifies):
+  /// call this once afterwards so `reset()` goes back to the loaded
+  /// state instead of the form's original, empty one.
+  void markAsInitial() {
+    _ownDirty = false;
+    for (final child in children) {
+      child.markAsInitial();
+    }
+    notifyListeners();
+  }
+
   void enable() {
     _enabled = true;
     for (final child in children) {

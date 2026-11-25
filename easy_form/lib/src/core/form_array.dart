@@ -61,6 +61,18 @@ class FormArray<T, C extends FormNode<T>> extends FormNode<List<T>> {
     notifyListeners();
   }
 
+  /// Replaces the item at [index] with [item], disposing the one that was
+  /// there. Unlike setting a field on the existing item, this swaps in a
+  /// different node outright — e.g. one already built elsewhere with its
+  /// own values, rather than [create]'s defaults.
+  void setAt(int index, C item) {
+    final old = _items[index];
+    abandon(old);
+    adopt(item);
+    _items[index] = item;
+    notifyListeners();
+  }
+
   void _insertItem(int index, C item) {
     adopt(item);
     _items.insert(index, item);

@@ -42,6 +42,20 @@ void main() {
       expect(form.email.touched, isTrue);
     });
 
+    test('markAsInitial cascades to children and rebases reset()', () {
+      final form = PersonForm();
+      form.name.value = 'Maria';
+      expect(form.dirty, isTrue);
+
+      form.markAsInitial();
+      expect(form.dirty, isFalse);
+      expect(form.name.initialValue, 'Maria');
+
+      form.name.value = 'Someone else';
+      form.reset();
+      expect(form.name.value, 'Maria');
+    });
+
     test('disabling the group disables its children in cascade', () {
       final form = PersonForm();
       form.disable();
