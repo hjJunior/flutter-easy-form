@@ -70,7 +70,10 @@ contacts[0].name.value = 'Maria';
 ## Cross-field validation, including against the root form
 
 A `FormGroup`'s own fields are validated together by overriding
-`validateSelf()` and throwing a `FormValidationException`:
+`validateSelf()`, which returns every violation found (empty when valid —
+the same convention `Validator<T>` uses, just able to report more than
+one error at once, since a group can fail more than one cross-field
+rule in the same pass):
 
 ```dart
 class ArenaForm extends FormGroup<Arena, ArenaForm> {
@@ -92,10 +95,11 @@ class ArenaForm extends FormGroup<Arena, ArenaForm> {
   Arena toValue() => Arena(international: international.value, contacts: contacts.value);
 
   @override
-  void validateSelf() {
+  List<ValidationError> validateSelf() {
     if (international.value && contacts.length == 0) {
-      throw const FormValidationException(code: 'international_arena_requires_contact');
+      return [const ValidationError('Needs at least one contact', code: 'international_arena_requires_contact')];
     }
+    return const [];
   }
 }
 ```
@@ -116,10 +120,11 @@ class ContactForm extends FormGroup<Contact, ArenaForm> {
   Contact toValue() => Contact(email: email.value);
 
   @override
-  void validateSelf() {
+  List<ValidationError> validateSelf() {
     if (context.root.international.value && email.value.isEmpty) {
-      throw const FormValidationException(code: 'email_required_for_international_arena');
+      return [const ValidationError('Email is required', code: 'email_required_for_international_arena')];
     }
+    return const [];
   }
 }
 ```

@@ -11,9 +11,10 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
   respected by the type system (no unsafe casts).
 - `FormGroup<T, TRoot>`: a typed object composed of other nodes,
   declared by subclassing and exposing real Dart properties — never a
-  map. Supports cross-field validation via `validateSelf()` and
-  `FormValidationException`, including rules that reach the root form
-  through `FormContext<TRoot>` (`context.root`), with no casts.
+  map. Supports cross-field validation by overriding `validateSelf()`,
+  which returns every violation found (so a group can report more than
+  one at once), including rules that reach the root form through
+  `FormContext<TRoot>` (`context.root`), with no casts.
 - `FormArray<T, C>`: an ordered, dynamic collection of controls or
   groups (`add`/`insert`/`removeAt`/`move`), with its own validators.
 - Ready-made validators: `required`, `minLength`, `maxLength`, `min`,
