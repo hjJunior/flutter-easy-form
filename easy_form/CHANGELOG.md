@@ -23,6 +23,15 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
   plain function setting each control's `value` already works.
 - Ready-made validators: `required`, `minLength`, `maxLength`, `min`,
   `max`, `email`, `pattern`, `custom`.
+- `FormControl.asyncValidators`: for checks that can't complete
+  synchronously (e.g. an API call). `FormNode.pending` is true while one
+  is in flight, aggregating up through groups and arrays the same way
+  `dirty`/`touched` do; a stale result (superseded by a newer run before
+  it resolved) is discarded. `toValue()` is unaffected either way — see
+  the next point.
+- `FormGroup.toValue()` is formally documented as best-effort: it never
+  checks `valid` and never throws, so an invalid or incomplete form
+  still builds *a* model.
 - `FormControlWidget<T>`: base class for a field with no extra resource
   to manage — handles listening to its control and rebuilding, including
   switching listeners if given a different control later.

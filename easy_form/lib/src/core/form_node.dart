@@ -34,6 +34,13 @@ abstract class FormNode<T> extends ChangeNotifier {
   bool get touched => _ownTouched || children.any((child) => child.touched);
   bool get untouched => !touched;
 
+  /// Whether an async validator is still running somewhere in this
+  /// subtree. Only [FormControl] has async validators of its own; groups
+  /// and arrays aggregate it from their descendants, the same way
+  /// [dirty] and [touched] do. Not reflected by [valid]/[invalid] — an
+  /// async error only shows up in [errors] once its validator resolves.
+  bool get pending => children.any((child) => child.pending);
+
   bool get enabled => _enabled;
   bool get disabled => !_enabled;
 
@@ -52,7 +59,8 @@ abstract class FormNode<T> extends ChangeNotifier {
   }
 
   /// Forces revalidation to surface, i.e. marks the node as touched.
-  /// Errors themselves are always computed live from [errors].
+  /// Sync errors are always computed live from [errors]; a [FormControl]
+  /// with async validators also (re-)runs them.
   void validate() => markAsTouched();
 
   /// Restores this node (and every descendant) to its initial state:

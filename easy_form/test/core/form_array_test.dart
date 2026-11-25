@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_easy_form/flutter_easy_form.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -117,6 +119,25 @@ void main() {
       people.add();
       people[0].name.value = 'Maria';
       expect(people.valid, isTrue);
+    });
+
+    test('pending aggregates up from an item with an async validator', () async {
+      final completer = Completer<ValidationError?>();
+      final tags = FormArray<String, FormControl<String>>(
+        create: () => FormControl<String>(
+          initialValue: '',
+          asyncValidators: [(value) => completer.future],
+        ),
+      );
+
+      expect(tags.pending, isFalse); // no items yet
+
+      tags.add();
+      expect(tags.pending, isTrue);
+
+      completer.complete(null);
+      await Future<void>.delayed(Duration.zero);
+      expect(tags.pending, isFalse);
     });
   });
 }

@@ -110,6 +110,33 @@ form.name.value = 'something else';
 form.reset(); // back to existingArena.name, not ''
 ```
 
+## Async validators
+
+A check that can't complete synchronously — asking an API whether a
+username is taken, say — goes in `asyncValidators` instead of
+`validators`:
+
+```dart
+final username = FormControl<String>(
+  initialValue: '',
+  asyncValidators: [
+    (value) async {
+      final taken = await api.isUsernameTaken(value);
+      return taken ? const ValidationError('Already taken', code: 'taken') : null;
+    },
+  ],
+);
+```
+
+They run on construction, whenever the control's value changes, on
+`reset()`, and on `validate()`. `pending` is true while one is in
+flight (it aggregates up through groups and arrays, same as `dirty` and
+`touched`); `errors` only gains the async result once it resolves —
+`valid`/`invalid` aren't affected by `pending` itself, only by what
+ends up in `errors`. A result that arrives after a newer run has
+already started (the value changed again, or the control reset, before
+it resolved) is discarded — it no longer matches the live value.
+
 ## Cross-field validation, including against the root form
 
 A `FormGroup`'s own fields are validated together by overriding
