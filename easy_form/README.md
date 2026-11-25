@@ -49,6 +49,12 @@ Every node exposes `value`, `valid`/`invalid`, `errors`, `dirty`/`pristine`,
 `Listenable` (`ChangeNotifier`) — listen to the root form and rebuild your
 widgets when anything in the tree changes.
 
+`toValue()` is best-effort: it doesn't check `valid` and never throws, so
+an invalid or incomplete form still builds *a* model (a required field
+left empty contributes `''`, for instance). Check `valid` yourself first
+if the result needs to be correct, not just buildable — see the "Salvar"
+button in `example/lib/main.dart`.
+
 ## Dynamic arrays
 
 ```dart

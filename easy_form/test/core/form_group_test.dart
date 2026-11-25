@@ -15,6 +15,16 @@ void main() {
       expect(form.value.email, 'maria@example.com');
     });
 
+    test('toValue() is best-effort: it never checks valid or throws', () {
+      final form = PersonForm(); // name is required and still empty
+      expect(form.invalid, isTrue);
+
+      final person = form.toValue();
+
+      expect(person.name, '');
+      expect(person.email, '');
+    });
+
     test('aggregated validity: a group is invalid if any child is invalid', () {
       final form = PersonForm();
       expect(form.invalid, isTrue); // name is required and empty

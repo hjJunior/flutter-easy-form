@@ -71,6 +71,20 @@ abstract class FormGroup<T, TRoot> extends FormNode<T> {
   Iterable<FormNode<Object?>> get children;
 
   /// Builds the typed domain model from the group's current field values.
+  ///
+  /// This is a best-effort projection: it does **not** check [valid] and
+  /// never throws for an invalid or incomplete form — a required
+  /// `FormControl<String>` left empty still contributes `''`, for
+  /// instance. Call [validate] and check [valid] first if the result
+  /// needs to be correct, not just buildable:
+  ///
+  /// ```dart
+  /// form.validate();
+  /// if (form.valid) {
+  ///   final model = form.toValue();
+  ///   // ...
+  /// }
+  /// ```
   T toValue();
 
   @override
