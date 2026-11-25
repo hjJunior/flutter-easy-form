@@ -62,12 +62,15 @@ class ArenaForm extends FormGroup<Arena, ArenaForm> {
       );
 
   @override
-  void validateSelf() {
+  List<ValidationError> validateSelf() {
     if (international.value && contacts.length == 0) {
-      throw const FormValidationException(
-        code: 'international_arena_requires_contact',
-        message: 'Arena internacional precisa de ao menos um contato',
-      );
+      return [
+        const ValidationError(
+          'An international arena requires at least one contact',
+          code: 'international_arena_requires_contact',
+        ),
+      ];
     }
+    return const [];
   }
 }
