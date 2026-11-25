@@ -11,7 +11,6 @@ export 'src/core/form_array.dart';
 export 'src/validation/validation_error.dart';
 export 'src/validation/validator.dart';
 export 'src/validation/validators.dart';
-export 'src/validation/form_validation_exception.dart';
 
 // Legacy API (v1).
 export 'src/easy_form_extension.dart';
