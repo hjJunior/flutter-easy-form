@@ -70,6 +70,7 @@ void main() {
 
     test('validateSelf (own level): a rule between the group\'s own fields', () {
       final form = ArenaForm();
+      form.name.value = 'Central Arena';
       form.international.value = true;
 
       expect(form.invalid, isTrue);
@@ -85,6 +86,14 @@ void main() {
       form.contacts[0].name.value = 'Maria';
       form.contacts[0].email.value = 'maria@example.com';
       expect(form.valid, isTrue);
+    });
+
+    test('validateSelf can report more than one violation at once', () {
+      final form = ArenaForm();
+      form.international.value = true; // name is empty and there are no contacts
+
+      final codes = form.errors.map((error) => error.code).toSet();
+      expect(codes, containsAll(['international_arena_requires_name', 'international_arena_requires_contact']));
     });
 
     test('validateSelf (nested level): reaches the root via context with no casts', () {

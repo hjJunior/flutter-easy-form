@@ -51,14 +51,16 @@ class ContactForm extends FormGroup<Contact, ArenaForm> {
   Contact toValue() => Contact(name: name.value, email: email.value);
 
   @override
-  ValidationError? validateSelf() {
+  List<ValidationError> validateSelf() {
     if (context.root.international.value && email.value.isEmpty) {
-      return const ValidationError(
-        'Email is required for contacts of international arenas',
-        code: 'email_required_for_international_arena',
-      );
+      return [
+        const ValidationError(
+          'Email is required for contacts of international arenas',
+          code: 'email_required_for_international_arena',
+        ),
+      ];
     }
-    return null;
+    return const [];
   }
 }
 
@@ -70,6 +72,9 @@ class Arena {
   final List<Contact> contacts;
 }
 
+/// `validateSelf` can report more than one violation at once: an
+/// international arena with no name AND no contact fails both rules
+/// below in a single pass, and both errors show up in [FormGroup.errors].
 class ArenaForm extends FormGroup<Arena, ArenaForm> {
   final name = FormControl<String>(initialValue: '');
   final international = FormControl<bool>(initialValue: false);
@@ -93,13 +98,23 @@ class ArenaForm extends FormGroup<Arena, ArenaForm> {
       );
 
   @override
-  ValidationError? validateSelf() {
+  List<ValidationError> validateSelf() {
+    final errors = <ValidationError>[];
+
+    if (international.value && name.value.trim().isEmpty) {
+      errors.add(const ValidationError(
+        'An international arena must have a name',
+        code: 'international_arena_requires_name',
+      ));
+    }
+
     if (international.value && contacts.length == 0) {
-      return const ValidationError(
+      errors.add(const ValidationError(
         'An international arena requires at least one contact',
         code: 'international_arena_requires_contact',
-      );
+      ));
     }
-    return null;
+
+    return errors;
   }
 }
