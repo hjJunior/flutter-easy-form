@@ -19,9 +19,16 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
   groups (`add`/`insert`/`removeAt`/`move`), with its own validators.
 - Ready-made validators: `required`, `minLength`, `maxLength`, `min`,
   `max`, `email`, `pattern`, `custom`.
-- No Flutter field widgets yet (e.g. `TextFormControl`) — the example
-  app wires `TextEditingController` to `FormControl` by hand in the
-  meantime; dedicated widgets are planned for a later release.
+- `FormControlWidget<T>`: base class for a field with no extra resource
+  to manage — handles listening to its control and rebuilding, including
+  switching listeners if given a different control later.
+- `FormControlTextSync<T>`: mixin for a field's own `State` when it needs
+  a `TextEditingController` (most commonly a `TextField`). Not a
+  replacement for `TextField` itself — you keep writing and customizing
+  that widget (masks via `inputFormatters` included); the mixin only
+  removes the controller plumbing around it.
+- No ready-made field widgets yet (no `TextFormControl`-the-widget, no
+  array builders) — see the two helpers above and `example/lib/main.dart`.
 
 ## [0.0.1-rc] - Initial Release
 

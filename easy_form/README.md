@@ -132,9 +132,61 @@ class ContactForm extends FormGroup<Contact, ArenaForm> {
 See `example/lib/arena_form.dart` and `example/lib/main.dart` for a full,
 runnable form with dynamic contacts and this exact rule.
 
+## Building field widgets
+
+The library doesn't ship ready-made fields (no `TextFormControl`-the-widget)
+— you keep writing (and fully customizing) `TextField`, `SwitchListTile`,
+or whatever a third-party package gives you, including masks via
+`inputFormatters`. Two small helpers remove the plumbing around that:
+
+- **`FormControlWidget<T>`** — for a field with no extra resource to
+  manage (a switch, a checkbox, a slider, ...). Extend it and implement
+  `build(context, control)`; it listens to the control and rebuilds for
+  you, including switching listeners if it's later given a different one.
+
+  ```dart
+  class InternationalSwitch extends FormControlWidget<bool> {
+    const InternationalSwitch({super.key, required super.control});
+
+    @override
+    Widget build(BuildContext context, FormControl<bool> control) {
+      return SwitchListTile(
+        value: control.value,
+        onChanged: control.disabled ? null : (value) => control.value = value,
+      );
+    }
+  }
+  ```
+
+- **`FormControlTextSync<T>`** — a mixin for a field's own `State` when it
+  needs a `TextEditingController` (a `TextField`, most commonly). Implement
+  `FormControl<String> get control` (typically `=> widget.control`); the
+  mixin creates `textController`, keeps its text matching the control's
+  value when it changes from outside (without fighting the user's typing
+  or cursor position), switches listeners if the control itself changes,
+  and disposes everything — `initState`, `didUpdateWidget` and `dispose`
+  are all handled for you.
+
+  ```dart
+  class _NameFieldState extends State<NameField> with FormControlTextSync<NameField> {
+    @override
+    FormControl<String> get control => widget.control;
+
+    @override
+    Widget build(BuildContext context) {
+      return TextField(
+        controller: textController,
+        onChanged: (value) => control.value = value,
+      );
+    }
+  }
+  ```
+
+See `example/lib/main.dart` for both in a real screen.
+
 ## Status
 
-This is a `0.1.0-beta` rewrite. Dedicated field widgets (a
-`TextFormControl`, array builders, etc.) are not implemented yet — the
-example app wires `TextEditingController` to `FormControl` by hand in
-the meantime.
+This is a `0.1.0-beta` rewrite. The core is typed end to end; `FormControlWidget`
+and `FormControlTextSync` cover the common plumbing for building your own
+field widgets, but the library doesn't ship ready-made fields yet (no
+`TextFormControl`-the-widget, no array builders).

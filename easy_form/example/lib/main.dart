@@ -20,10 +20,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Demonstrates the new typed core (FormNode/FormControl/FormGroup/FormArray)
-/// directly, without dedicated field widgets yet — those are planned for a
-/// later phase. Each text field below manually syncs a [TextEditingController]
-/// with a [FormControl], the same way a future `TextFormControl` widget would.
+/// Demonstrates the typed core (FormNode/FormControl/FormGroup/FormArray)
+/// together with the two Flutter-facing helpers: [FormControlWidget] for a
+/// field with no extra resources to manage ([_InternationalSwitch]), and
+/// [FormControlTextSync] for one that owns a [TextEditingController]
+/// ([_BoundTextField]).
 class ArenaFormScreen extends StatefulWidget {
   const ArenaFormScreen({super.key});
 
@@ -135,8 +136,9 @@ class _InternationalSwitch extends FormControlWidget<bool> {
 }
 
 /// A text field still needs its own [State] to own a [TextEditingController]
-/// across rebuilds — [FormControlWidget] only standardizes the listening
-/// side, not resources a concrete field may need beyond that.
+/// across rebuilds. [FormControlTextSync] removes the boilerplate of
+/// keeping that controller synced with the control — this widget is free
+/// to build whatever [TextField] it wants around `textController`.
 class _BoundTextField extends StatefulWidget {
   const _BoundTextField({required this.control, required this.label});
 
@@ -147,40 +149,20 @@ class _BoundTextField extends StatefulWidget {
   State<_BoundTextField> createState() => _BoundTextFieldState();
 }
 
-class _BoundTextFieldState extends State<_BoundTextField> {
-  late final controller = TextEditingController(text: widget.control.value);
-
+class _BoundTextFieldState extends State<_BoundTextField>
+    with FormControlTextSync<_BoundTextField> {
   @override
-  void initState() {
-    super.initState();
-    widget.control.addListener(_syncFromControl);
-  }
-
-  void _syncFromControl() {
-    if (controller.text != widget.control.value) {
-      controller.text = widget.control.value;
-    }
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    widget.control.removeListener(_syncFromControl);
-    controller.dispose();
-    super.dispose();
-  }
+  FormControl<String> get control => widget.control;
 
   @override
   Widget build(BuildContext context) {
-    final error = widget.control.touched && widget.control.invalid
-        ? widget.control.errors.first.message
-        : null;
+    final error = control.touched && control.invalid ? control.errors.first.message : null;
 
     return TextField(
-      controller: controller,
+      controller: textController,
       decoration: InputDecoration(labelText: widget.label, errorText: error),
-      onChanged: (value) => widget.control.value = value,
-      onTapOutside: (_) => widget.control.markAsTouched(),
+      onChanged: (value) => control.value = value,
+      onTapOutside: (_) => control.markAsTouched(),
     );
   }
 }
