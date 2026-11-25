@@ -1,6 +1,6 @@
 name: flutter_easy_form
-description: A easy way to build forms with Flutter.
-version: 0.0.1-rc
+description: Typed, class-based forms for Flutter — FormNode/FormControl/FormGroup/FormArray, no Map<String, dynamic>, no string keys.
+version: 0.1.0-beta.1
 repository: https://github.com/hjJunior/flutter-easy-form
 
 environment:
