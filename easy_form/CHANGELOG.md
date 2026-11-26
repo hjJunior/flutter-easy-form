@@ -70,8 +70,24 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
   replacement for `TextField` itself — you keep writing and customizing
   that widget (masks via `inputFormatters` included); the mixin only
   removes the controller plumbing around it.
+- `FormNode.highlight([duration])`/`isHighlighted`: briefly marks a node
+  as needing attention (e.g. an invalid field that isn't on screen —
+  a previous step of a multi-step form), clearing on its own; a bound
+  widget reads `isHighlighted` in its own `build` to flash/outline
+  itself — the library draws nothing on its own.
+- `FormControl.requestFocus()`/`ensureVisible()`/`requestAttention()`:
+  ask a control's bound field to take focus, scroll itself into view
+  (a no-op if there's nothing to scroll — detected per field via
+  `Scrollable.maybeOf(context)`, not forced), or both plus `highlight()`
+  together. A `requestFocus()` while nothing's attached (the field
+  isn't mounted right now) is kept and honored the moment something
+  attaches. `FormControlTextSync` and the new `FormControlFocusSync`
+  wire both automatically.
+- `FormControlFocusSync<T>`: like `FormControlTextSync`, for a field
+  with no `TextEditingController` (a picker, a dropdown, a button).
+  Owns `focusNode`, exposes `isFocused`.
 - No ready-made field widgets yet (no `TextFormControl`-the-widget, no
-  array builders) — see the two helpers above and `example/lib/main.dart`.
+  array builders) — see the helpers above and `example/lib/main.dart`.
 - The example app and the widget tests use `package:material_ui/material_ui.dart`
   instead of the now-deprecated `package:flutter/material.dart` (the
   library itself depends on neither — `FormControlWidget` and

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import '../validation/validation_error.dart';
 import '../validation/validation_mode.dart';
 import '../validation/validator.dart';
@@ -60,6 +62,12 @@ class FormControl<T> extends FormNode<T> {
   bool _graduatedToLive = false; // afterFirstUnfocus, once checked once
   Timer? _debounceTimer;
 
+  // See requestFocus/attachRequestFocusCallback and
+  // ensureVisible/attachEnsureVisibleCallback.
+  VoidCallback? _requestFocusCallback;
+  bool _wantsFocus = false;
+  VoidCallback? _ensureVisibleCallback;
+
   @override
   T get value => _value;
 
@@ -109,6 +117,61 @@ class FormControl<T> extends FormNode<T> {
       case ValidationMode.onUserInteraction:
         break;
     }
+  }
+
+  /// Registers the callback that [requestFocus] delegates to — a bound
+  /// `FormControlTextSync` or `FormControlFocusSync` does this for you
+  /// (e.g. `() => focusNode.requestFocus()`). Pass `null` to detach
+  /// (typically on the widget's `dispose`).
+  void attachRequestFocusCallback(VoidCallback? callback) {
+    _requestFocusCallback = callback;
+    if (callback != null && _wantsFocus) {
+      _wantsFocus = false;
+      callback();
+    }
+  }
+
+  /// Asks this control's bound field to take focus. If none is
+  /// currently attached — e.g. this field lives on a different step of
+  /// a multi-step form, not mounted right now — the request is kept and
+  /// honored the next time one attaches (see
+  /// [attachRequestFocusCallback]), typically once the app navigates to
+  /// that step.
+  void requestFocus() {
+    final callback = _requestFocusCallback;
+    if (callback != null) {
+      callback();
+    } else {
+      _wantsFocus = true;
+    }
+  }
+
+  /// Registers the callback [ensureVisible] delegates to. A bound
+  /// `FormControlTextSync` or `FormControlFocusSync` does this for you
+  /// automatically, using `Scrollable.ensureVisible` when the field
+  /// turns out to have a scrollable ancestor — nothing otherwise. Pass
+  /// `null` to detach, or to register something else entirely (a
+  /// different scroll mechanism, a `PageView`, ...).
+  void attachEnsureVisibleCallback(VoidCallback? callback) {
+    _ensureVisibleCallback = callback;
+  }
+
+  /// Asks this control's bound field to scroll itself into view, if
+  /// whatever it's in supports that — a no-op otherwise (no callback
+  /// attached, e.g. nothing scrollable, or the field isn't currently
+  /// mounted at all). See [attachEnsureVisibleCallback].
+  void ensureVisible() => _ensureVisibleCallback?.call();
+
+  /// Convenience for the common "an invalid field needs the user's
+  /// attention" case: requests focus, asks to be scrolled into view,
+  /// and highlights for [highlightDuration]. In a multi-step form,
+  /// navigate to the right step first — focus and ensure-visible both
+  /// still take effect once the field actually mounts there, but
+  /// nothing here decides which step that is.
+  void requestAttention({Duration highlightDuration = const Duration(seconds: 2)}) {
+    requestFocus();
+    ensureVisible();
+    highlight(duration: highlightDuration);
   }
 
   @override

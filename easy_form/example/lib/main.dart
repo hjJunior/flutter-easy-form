@@ -7,6 +7,18 @@ void main() {
   runApp(const MyApp());
 }
 
+/// Focuses, scrolls into view and highlights whichever field [node] is —
+/// `requestFocus`/`ensureVisible` only exist on [FormControl] (a group or
+/// array isn't a single focusable, scrollable thing), so a group-level
+/// error (e.g. `ArenaForm.validateSelf()`) just highlights itself instead.
+void _bringToAttention(FormNode<Object?> node) {
+  if (node is FormControl) {
+    node.requestAttention();
+  } else {
+    node.highlight();
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -91,10 +103,17 @@ class _ArenaFormScreenState extends State<ArenaFormScreen> {
                 child: const Text('Adicionar contato'),
               ),
               const Divider(height: 32),
-              if (form.errors.isNotEmpty)
-                ...form.errors.map(
-                  (error) => Text(error.message, style: const TextStyle(color: Colors.red)),
-                ),
+              // Tap an error to jump to the field that reported it —
+              // validationErrors keeps each one tied to its exact node,
+              // unlike the flat list `form.errors` already gives you.
+              for (final entry in form.validationErrors.entries)
+                for (final error in entry.value)
+                  ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.error_outline, color: Colors.red),
+                    title: Text(error.message),
+                    onTap: () => _bringToAttention(entry.key),
+                  ),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () async {
@@ -105,6 +124,12 @@ class _ArenaFormScreenState extends State<ArenaFormScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Arena "${arena.name}" criada com sucesso')),
                     );
+                  } else {
+                    // Jumps to the first invalid field — handy when it's
+                    // buried in a long list of contacts, or (in a real
+                    // multi-step form) on a step that isn't visible yet.
+                    final invalid = form.validationErrors.keys;
+                    if (invalid.isNotEmpty) _bringToAttention(invalid.first);
                   }
                 },
                 child: const Text('Salvar'),
@@ -162,7 +187,12 @@ class _BoundTextFieldState extends State<_BoundTextField>
     return TextField(
       controller: textController,
       focusNode: focusNode,
-      decoration: InputDecoration(labelText: widget.label, errorText: control.displayError),
+      decoration: InputDecoration(
+        labelText: widget.label,
+        errorText: control.displayError,
+        filled: control.isHighlighted,
+        fillColor: Colors.amber.withValues(alpha: 0.3),
+      ),
       onChanged: (value) => control.value = value,
     );
   }
