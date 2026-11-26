@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [master, v2-beta]
+  pull_request:
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy_form
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze (lib/ and example/)
+        run: flutter analyze
+
+      - name: Run tests (unit + widget)
+        run: flutter test
