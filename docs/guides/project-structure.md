@@ -1,31 +1,59 @@
 # How to structure your project
 
-A few conventions that keep a typed form tree easy to navigate as it
-grows, all of them already used in `example/lib`:
+A suggested layout for where forms, rules and fields each live, as a
+project grows past one or two forms:
 
-* **One file per `FormGroup` subclass**, named after it —
-  `address_form.dart` for `AddressForm`. The plain model it builds
-  (`Address`) can live in the same file or wherever your domain models
-  already live; it has no dependency on the form at all.
-* **One file per field widget**, reusable across forms —
-  `name_field.dart` for a `NameField` built with `FormControlTextSync`.
-  A field widget only needs a `FormControl<T>`, never the form that
-  owns it, so the same `NameField` works in any form with a
-  `FormControl<String>` to bind it to.
-* **Own the form instance in a `State`**, not in a widget's `build` —
-  it must be created once and disposed:
+```
+lib/
+  forms/
+    address/
+      address_form.dart       # AddressForm (FormGroup) + Address (model)
+    arena/
+      arena_form.dart         # ArenaForm — the root FormGroup
+      court_form.dart         # CourtForm — nested, a field of ArenaForm
+  validators/
+    tax_id_validators.dart    # rules shared by more than one form
+  widgets/
+    inputs/
+      app_text_input.dart     # AppTextInput — built once, reused everywhere
+      app_date_input.dart
+      app_switch_input.dart
+```
 
-  ```dart
-  class _AddressScreenState extends State<AddressScreen> {
-    final form = AddressForm();
+* **`forms/<feature>/`** — one folder per form, one file per
+  `FormGroup` subclass inside it, named after the class
+  (`address_form.dart` for `AddressForm`). A form with nested groups
+  (see below) keeps every one of its groups in the same folder — they
+  aren't reusable outside that form, so there's no reason to scatter
+  them. The plain model a form builds (`Address`) can live in the same
+  file, or wherever your domain models already live — it has no
+  dependency on the form at all, so either works.
+* **`validators/`** — a rule shared across more than one form (a
+  company's tax-ID format, say) is just a plain function, so it
+  belongs here, grouped by what it validates rather than by which form
+  uses it. A rule used by exactly one field stays inline instead, in
+  that field's own `validators: [...]`, rather than round-tripping
+  through this folder for something nothing else needs.
+* **`widgets/inputs/`** — the small, reusable input-widget kit
+  (`AppTextInput`, `AppDateInput`, `AppSwitchInput`, ...) covered in
+  [Using Flutter widgets](../integrate-your-stack/flutter-widgets.md).
+  Built once; every form under `forms/` just imports and instantiates
+  these, never redefines its own.
 
-    @override
-    void dispose() {
-      form.dispose();
-      super.dispose();
-    }
+Own the form instance in a `State`, not in a widget's `build` — it
+must be created once and disposed:
+
+```dart
+class _AddressScreenState extends State<AddressScreen> {
+  final form = AddressForm();
+
+  @override
+  void dispose() {
+    form.dispose();
+    super.dispose();
   }
-  ```
+}
+```
 
 ## Nested forms
 
@@ -84,15 +112,8 @@ class CourtForm extends FormGroup<Court, ArenaForm> {
 ```
 
 `CourtForm`'s own `TRoot` is `ArenaForm`, not `CourtForm` — only the
-form at the actual root of the tree uses itself. See [Cross-field
+form at the actual root of the tree uses itself. `arena_form.dart`
+holds both classes, since `CourtForm` only ever makes sense as part of
+an `ArenaForm`. See [Cross-field
 validation](cross-field-validation.md) for more on `validateSelf()` and
 `context.root`.
-
-## Where validators live
-
-A rule used by exactly one field stays inline, in that field's
-`validators: [...]`. A rule shared across forms (a company's tax-ID
-format, say) is just a plain function, so it belongs wherever your
-other shared utilities do — e.g. a `validators.dart` next to your
-domain models — and gets passed the same way: `validators:
-[requiredTaxId]`.

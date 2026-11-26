@@ -35,18 +35,20 @@ class AddressForm extends FormGroup<Address, AddressForm> {
 Now wire a field to a real widget. `FormControlTextSync` is the mixin
 for anything backed by a `TextEditingController` (a `TextField`, most
 commonly) — it owns the controller and focus node and keeps them in
-sync with the control for you:
+sync with the control for you. Build this **once**, as a widget that
+takes any `FormControl<String>` — not one per field:
 
 ```dart
-class StreetField extends StatefulWidget {
-  const StreetField({super.key, required this.control});
+class AppTextInput extends StatefulWidget {
+  const AppTextInput({super.key, required this.control, required this.label});
   final FormControl<String> control;
+  final String label;
 
   @override
-  State<StreetField> createState() => _StreetFieldState();
+  State<AppTextInput> createState() => _AppTextInputState();
 }
 
-class _StreetFieldState extends State<StreetField> with FormControlTextSync<StreetField> {
+class _AppTextInputState extends State<AppTextInput> with FormControlTextSync<AppTextInput> {
   @override
   FormControl<String> get control => widget.control;
 
@@ -55,6 +57,7 @@ class _StreetFieldState extends State<StreetField> with FormControlTextSync<Stre
     return TextField(
       controller: textController,
       focusNode: focusNode,
+      decoration: InputDecoration(labelText: widget.label),
       onChanged: (value) => control.value = value,
     );
   }
@@ -63,7 +66,9 @@ class _StreetFieldState extends State<StreetField> with FormControlTextSync<Stre
 
 Create the form once (e.g. as a field on a `State`, disposed in
 `dispose()`), and rebuild whenever it changes with a
-`ListenableBuilder`:
+`ListenableBuilder`. The same `AppTextInput` binds to both fields —
+it's generic over any `FormControl<String>`, nothing specific to
+`street`:
 
 ```dart
 final form = AddressForm();
@@ -72,8 +77,8 @@ ListenableBuilder(
   listenable: form,
   builder: (context, _) => Column(
     children: [
-      StreetField(control: form.street),
-      // ... city, following the same pattern
+      AppTextInput(control: form.street, label: 'Street'),
+      AppTextInput(control: form.city, label: 'City'),
       ElevatedButton(
         onPressed: form.valid ? () => save(form.toValue()) : null,
         child: const Text('Save'),
@@ -82,6 +87,11 @@ ListenableBuilder(
   ),
 );
 ```
+
+See [Using Flutter widgets](../integrate-your-stack/flutter-widgets.md)
+for the same idea applied to a date picker and a switch, and [How to
+structure your project](../guides/project-structure.md) for where this
+small set of input widgets is meant to live.
 
 That's the whole loop: type a model, declare a form for it, bind each
 control to a widget, read `toValue()` once `valid` is true. Next: [adding

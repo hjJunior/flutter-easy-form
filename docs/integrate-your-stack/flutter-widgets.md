@@ -1,13 +1,21 @@
 # Using Flutter widgets
 
 The library doesn't ship ready-made fields (no `TextFormControl`-the-widget)
-— you keep writing (and fully customizing) `TextField`, `OutlinedButton`,
+— you build your own, on top of `TextField`, `OutlinedButton`,
 `SwitchListTile`, or whatever a third-party package gives you, including
 masks via `inputFormatters`. Three small helpers remove the plumbing
-around that; a control binds to exactly one of them depending on what
-kind of widget it drives.
+around that.
 
-## Text field
+**You build each of these once per app, not once per field.** A field
+widget only depends on a `FormControl<T>` — never on the form that owns
+it — so `AppTextInput`, once written, binds to *any* `FormControl<String>`
+in *any* form. Most apps end up with a handful of these (text, date,
+switch, maybe a picker or two), each parameterized with whatever your
+design needs beyond the control itself (`label`, `hint`, `keyboardType`,
+...), and never touch `FormControlTextSync` again after that — every
+new form just instantiates the ones it needs.
+
+## Text input
 
 `FormControlTextSync` is the mixin for a field's own `State` when it
 needs a `TextEditingController`. Implement `FormControl<String> get
@@ -21,15 +29,18 @@ all handled for you. It also owns `focusNode` and calls
 `afterFirstUnfocus` validation modes need — pass it along.
 
 ```dart
-class NameField extends StatefulWidget {
-  const NameField({super.key, required this.control});
+class AppTextInput extends StatefulWidget {
+  const AppTextInput({super.key, required this.control, required this.label, this.keyboardType});
+
   final FormControl<String> control;
+  final String label;
+  final TextInputType? keyboardType;
 
   @override
-  State<NameField> createState() => _NameFieldState();
+  State<AppTextInput> createState() => _AppTextInputState();
 }
 
-class _NameFieldState extends State<NameField> with FormControlTextSync<NameField> {
+class _AppTextInputState extends State<AppTextInput> with FormControlTextSync<AppTextInput> {
   @override
   FormControl<String> get control => widget.control;
 
@@ -38,14 +49,24 @@ class _NameFieldState extends State<NameField> with FormControlTextSync<NameFiel
     return TextField(
       controller: textController,
       focusNode: focusNode,
-      decoration: InputDecoration(errorText: control.displayError),
+      keyboardType: widget.keyboardType,
+      decoration: InputDecoration(labelText: widget.label, errorText: control.displayError),
+      enabled: control.enabled,
       onChanged: (value) => control.value = value,
     );
   }
 }
 ```
 
-## Date picker
+Used for every `FormControl<String>` in every form from here on:
+
+```dart
+AppTextInput(control: form.street, label: 'Street'),
+AppTextInput(control: form.city, label: 'City'),
+AppTextInput(control: contactForm.email, label: 'Email', keyboardType: TextInputType.emailAddress),
+```
+
+## Date input
 
 `FormControlFocusSync` is the same idea, for a field with no
 `TextEditingController` — a picker, a dropdown, a button. Owns
@@ -55,15 +76,17 @@ ends the "editing" (here, the dialog closing) just needs to call
 `control.handleUnfocus()` itself:
 
 ```dart
-class DateField extends StatefulWidget {
-  const DateField({super.key, required this.control});
+class AppDateInput extends StatefulWidget {
+  const AppDateInput({super.key, required this.control, required this.label});
+
   final FormControl<DateTime?> control;
+  final String label;
 
   @override
-  State<DateField> createState() => _DateFieldState();
+  State<AppDateInput> createState() => _AppDateInputState();
 }
 
-class _DateFieldState extends State<DateField> with FormControlFocusSync<DateField> {
+class _AppDateInputState extends State<AppDateInput> with FormControlFocusSync<AppDateInput> {
   @override
   FormControl<DateTime?> get control => widget.control;
 
@@ -84,13 +107,13 @@ class _DateFieldState extends State<DateField> with FormControlFocusSync<DateFie
       style: OutlinedButton.styleFrom(
         side: isFocused ? const BorderSide(width: 2) : null,
       ),
-      child: Text(control.value?.toString() ?? 'Pick a date'),
+      child: Text(control.value?.toString() ?? widget.label),
     );
   }
 }
 ```
 
-## Switch
+## Switch input
 
 For a field with no extra resource to manage at all (a switch, a
 checkbox, a slider, ...), `FormControlWidget<T>` skips the `State`
@@ -99,12 +122,15 @@ listens to the control and rebuilds for you, including switching
 listeners if it's later given a different one.
 
 ```dart
-class InternationalSwitch extends FormControlWidget<bool> {
-  const InternationalSwitch({super.key, required super.control});
+class AppSwitchInput extends FormControlWidget<bool> {
+  const AppSwitchInput({super.key, required super.control, required this.label});
+
+  final String label;
 
   @override
   Widget build(BuildContext context, FormControl<bool> control) {
     return SwitchListTile(
+      title: Text(label),
       value: control.value,
       onChanged: control.disabled ? null : (value) => control.value = value,
     );
@@ -121,4 +147,6 @@ attention without the widget needing to be looked up — see
 `ensureVisible()`, `highlight()` and `requestAttention()`, and [Multi-step
 forms](../guides/multi-step-forms.md) for the scenario they exist for.
 
-See `example/lib/main.dart` for all three mixins in a real screen.
+See `example/lib/main.dart` for all three mixins in a real screen, and
+[How to structure your project](../guides/project-structure.md) for
+where this small set of input widgets is meant to live.
