@@ -1,8 +1,9 @@
-# Validation
+# How it works
 
-A check that can't complete synchronously — asking an API whether a
-username is taken, say — goes in `asyncValidators` instead of
-`validators`:
+`errors`/`valid` are always computed live from a control's current
+`validators` — that part never waits for anything. A check that can't
+complete synchronously — asking an API whether a username is taken,
+say — goes in `asyncValidators` instead:
 
 ```dart
 final username = FormControl<String>(
@@ -29,10 +30,9 @@ longer matches the live value.
 
 ## When validation runs (`ValidationMode`)
 
-`errors`/`valid` are always computed live from the current value —
-that part never waits for anything. What a `ValidationMode` controls is
-*when a control is willing to show what it already knows*, and *when
-an async validator actually runs* rather than just when it's shown:
+What a `ValidationMode` controls is *when a control is willing to show
+what it already knows*, and *when an async validator actually runs*
+rather than just when it's shown:
 
 | Mode | Editing | Leaving the field (after an edit) |
 | --- | --- | --- |
@@ -55,11 +55,12 @@ form.name.setValidationMode(ValidationMode.onUserInteraction);
 
 A mode is inherited from the nearest ancestor that set one, defaulting
 to `manual` at the root. `onUnfocus` and `afterFirstUnfocus` need to
-know when the field loses focus: `FormControlTextSync` wires this for
-you automatically (via the `focusNode` it exposes); a custom field that
-manages its own focus or interaction (a picker, a dropdown) calls
-`control.handleUnfocus()` itself once that interaction ends — a no-op
-if the value hasn't actually changed since the last check.
+know when the field loses focus: `FormControlTextSync` and
+`FormControlFocusSync` wire this for you automatically (via the
+`focusNode` they expose); a custom field that manages its own focus or
+interaction calls `control.handleUnfocus()` itself once that
+interaction ends — a no-op if the value hasn't actually changed since
+the last check.
 
 ## Awaiting validation before you submit
 
