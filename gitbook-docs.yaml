@@ -1,0 +1,17 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: flutter_easy_form
+  structure:
+    - type: section
+      key: documentation
+      title: Documentation
+      path: documentation
+      children:
+        - type: space
+          key: docs
+          title: Documentation
+          path: docs
+          default: true
+          content:
+            directory: ./docs
+            language: en
