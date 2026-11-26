@@ -2,17 +2,14 @@
 
 [![CI](https://github.com/hjJunior/flutter-easy-form/actions/workflows/ci.yml/badge.svg)](https://github.com/hjJunior/flutter-easy-form/actions/workflows/ci.yml)
 
-Typed, class-based forms for Flutter. Declare a form as a plain Dart
-class with real properties — no `Map<String, dynamic>`, no string keys,
-no casts.
+Typed, class-based forms for Flutter. A form is a plain Dart class with
+real properties — no `Map<String, dynamic>`, no string keys, no casts —
+built from four pieces: `FormControl` (one value), `FormGroup` (a typed
+object made of other nodes), `FormArray` (a dynamic list of them), and
+validators. Everything is a `Listenable`, so a `ListenableBuilder` on
+your form already rebuilds whenever anything in it changes.
 
 ```dart
-class Address {
-  const Address({required this.street, required this.city});
-  final String street;
-  final String city;
-}
-
 class AddressForm extends FormGroup<Address, AddressForm> {
   final street = FormControl<String>(initialValue: '', validators: [Validators.required]);
   final city = FormControl<String>(initialValue: '', validators: [Validators.required]);
@@ -23,33 +20,21 @@ class AddressForm extends FormGroup<Address, AddressForm> {
   @override
   Address toValue() => Address(street: street.value, city: city.value);
 }
-
-final form = AddressForm();
-form.street.value = 'Av. Paulista, 1000';
-form.city.value = 'São Paulo';
-
-if (form.valid) {
-  final Address address = form.toValue();
-}
 ```
 
 ## Where to next
 
-* **[Core concepts](core-concepts.md)** — `FormControl`, `FormGroup`,
-  `FormArray`, and how to read validity and errors.
-* **[Loading an existing model](loading-existing-model.md)** — editing a
-  form that starts from data you already have.
-* **[Validation](validation.md)** — sync and async validators, when
-  they run (`ValidationMode`), and what to await before you submit.
-* **[Bringing an invalid field into view](invalid-field-attention.md)**
-  — focus, scroll-into-view and highlight for a field that failed
-  somewhere off-screen (a previous step of a multi-step form, say).
-* **[Cross-field validation](cross-field-validation.md)** — rules
-  between a group's own fields, including against the root form.
-* **[Building field widgets](field-widgets.md)** — the three Flutter
-  helpers that remove the plumbing around your own `TextField`,
-  `SwitchListTile`, picker, or anything else.
-* **[Status & roadmap](status.md)** — what's here, what isn't yet.
+* **[Getting started](getting-started/installation.md)** — install it,
+  build your first form, add your first validation.
+* **[Validation](validation/how-it-works.md)** — sync and async
+  validators, `ValidationMode`, and the built-in rules.
+* **[Integrate your stack](integrate-your-stack/flutter-widgets.md)** —
+  bind a control to a real `TextField`, date picker or switch.
+* **[Guides](guides/project-structure.md)** — structuring a project,
+  editing saved data, multi-step forms, array forms, cross-field rules,
+  server errors.
+* **[Reference](reference/form-node.md)** — `FormNode`, `FormControl`,
+  `FormGroup`, `FormArray`, and the project's status/roadmap.
 
 The package's own `README.md` (what pub.dev shows) stays a shorter
 summary; this site is the fuller version, kept as Markdown in the same

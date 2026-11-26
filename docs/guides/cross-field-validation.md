@@ -1,4 +1,4 @@
-# Cross-field validation, including against the root form
+# Cross-field validation
 
 A `FormGroup`'s own fields are validated together by overriding
 `validateSelf()`, which returns every violation found (empty when valid —
@@ -36,7 +36,9 @@ class ArenaForm extends FormGroup<Arena, ArenaForm> {
 ```
 
 A nested group reaches the root form the same way, through `context`,
-without any cast — `TRoot` is the root form's own type:
+without any cast — `TRoot` is the root form's own type (see [How to
+structure your project](project-structure.md) for why a deeply nested
+group's `TRoot` is still the ultimate root, not its direct parent):
 
 ```dart
 class ContactForm extends FormGroup<Contact, ArenaForm> {

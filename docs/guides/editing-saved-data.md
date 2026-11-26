@@ -1,8 +1,8 @@
-# Loading an existing model
+# Editing saved data
 
-There's no `fromValue`/`patchValue` in this library: `FormGroup` is a plain
-Dart class, so a plain function that sets each control's `value` already
-works, and already notifies:
+There's no `fromValue`/`patchValue` in this library: `FormGroup` is a
+plain Dart class, so a plain function that sets each control's `value`
+already works, and already notifies:
 
 ```dart
 void applyArena(ArenaForm form, Arena arena) {
@@ -20,7 +20,7 @@ The one thing the library does for you: after loading, call
 `form.markAsInitial()` so `reset()` goes back to what you just loaded
 instead of the form's original, empty state. It rebases every
 descendant's `initialValue` to its current value and clears `dirty`,
-recursively.
+recursively:
 
 ```dart
 applyArena(form, existingArena);
@@ -29,3 +29,8 @@ form.markAsInitial();
 form.name.value = 'something else';
 form.reset(); // back to existingArena.name, not ''
 ```
+
+Without that call, `reset()` after loading would clear the form back
+to empty, not back to the record you just opened for editing — and
+`dirty` would already read `true` the moment the screen opens, since
+every field's value no longer matches its original `initialValue`.
