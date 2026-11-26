@@ -21,14 +21,44 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
   descendant's) current value, for after loading an existing model by
   hand — there's no `fromValue`/`patchValue` in this library, since a
   plain function setting each control's `value` already works.
-- Ready-made validators: `required`, `minLength`, `maxLength`, `min`,
-  `max`, `email`, `pattern`, `custom`.
+- Ready-made validators: `required`, `minLength`, `maxLength`,
+  `exactLength`, `min`, `max`, `email`, `pattern`, `custom`.
 - `FormControl.asyncValidators`: for checks that can't complete
-  synchronously (e.g. an API call). `FormNode.pending` is true while one
-  is in flight, aggregating up through groups and arrays the same way
-  `dirty`/`touched` do; a stale result (superseded by a newer run before
-  it resolved) is discarded. `toValue()` is unaffected either way — see
-  the next point.
+  synchronously (e.g. an API call). `FormNode.validating` is true while
+  one is in flight, aggregating up through groups and arrays the same
+  way `dirty`/`touched` do; a stale result (superseded by a newer run
+  before it resolved) is discarded.
+- A validator that throws or times out instead of resolving sets
+  `FormNode.hasFailedValidation` (also aggregating through the tree),
+  meant to drive one form-level banner — not a `ValidationError`, which
+  would read as "this value is wrong" rather than "the check couldn't
+  run". Previously an uncaught exception here would leave the control
+  stuck `validating` forever.
+- `FormNode.canSubmit`: `valid && !validating && !hasFailedValidation` —
+  the actual submit-button-ready signal; `valid` alone says nothing
+  about a check still in flight.
+- `FormNode.validate()` is now `Future<void>`: it marks the subtree
+  touched and recursively awaits every async validator in it, so
+  `await form.validate()` is the guarantee `canSubmit`'s synchronous
+  snapshot can't give on its own.
+- `FormNode.validationErrors`: every error anywhere in the subtree, as a
+  `Map<FormNode<Object?>, List<ValidationError>>` keyed by the node that
+  reported it directly — unlike `errors`, which already flattens a
+  group's or array's descendants into its own list.
+- `FormNode.displayError`: a node's own first error, once it's
+  `touched` — otherwise `null`. The "show one message after the user
+  interacts" convention most field widgets want.
+- `ValidationMode` (`manual` — the default, `onUserInteraction`,
+  `onUnfocus`, `afterFirstUnfocus`): controls *when* a `FormControl`
+  reveals its errors and runs its async validators (debounced via
+  `asyncValidationDebounce` for the two "live" modes) — `errors`/`valid`
+  themselves stay always-live regardless. Inherited from the nearest
+  ancestor that called `FormNode.setValidationMode()`, defaulting to
+  `manual` at the root; any control can override it for itself.
+  `onUnfocus`/`afterFirstUnfocus` need `FormControl.handleUnfocus()`
+  called when the field loses focus — `FormControlTextSync` now owns a
+  `focusNode` and does this automatically; a custom field (a picker, a
+  dropdown) calls it itself.
 - `FormGroup.toValue()` is formally documented as best-effort: it never
   checks `valid` and never throws, so an invalid or incomplete form
   still builds *a* model.

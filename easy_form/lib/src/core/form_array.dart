@@ -80,12 +80,8 @@ class FormArray<T, C extends FormNode<T>> extends FormNode<List<T>> {
   }
 
   @override
-  List<ValidationError> get errors {
-    if (disabled) return const [];
-    return [
-      ...childrenErrors,
-      for (final validator in validators)
-        if (validator(value) case final error?) error,
-    ];
-  }
+  List<ValidationError> get ownErrors => [
+        for (final validator in validators)
+          if (validator(value) case final error?) error,
+      ];
 }

@@ -121,7 +121,7 @@ void main() {
       expect(people.valid, isTrue);
     });
 
-    test('pending aggregates up from an item with an async validator', () async {
+    test('validating aggregates up from an item with an async validator', () async {
       final completer = Completer<ValidationError?>();
       final tags = FormArray<String, FormControl<String>>(
         create: () => FormControl<String>(
@@ -130,14 +130,14 @@ void main() {
         ),
       );
 
-      expect(tags.pending, isFalse); // no items yet
+      expect(tags.validating, isFalse); // no items yet
 
       tags.add();
-      expect(tags.pending, isTrue);
+      expect(tags.validating, isTrue);
 
       completer.complete(null);
       await Future<void>.delayed(Duration.zero);
-      expect(tags.pending, isFalse);
+      expect(tags.validating, isFalse);
     });
   });
 }

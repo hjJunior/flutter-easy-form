@@ -18,6 +18,7 @@ class _FieldState extends State<_Field> with FormControlTextSync<_Field> {
   @override
   Widget build(BuildContext context) => TextField(
         controller: textController,
+        focusNode: focusNode,
         onChanged: (value) => control.value = value,
       );
 }
@@ -75,6 +76,28 @@ void main() {
       control.value = 'still alive'; // must not touch a disposed controller
 
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('calls control.handleUnfocus() when the field loses focus', (tester) async {
+      final control = FormControl<String>(
+        initialValue: '',
+        validators: [Validators.required],
+      )..setValidationMode(ValidationMode.onUnfocus);
+
+      await tester.pumpWidget(_wrap(
+        Column(
+          children: [_Field(control: control), const TextField()],
+        ),
+      ));
+
+      await tester.enterText(find.byType(TextField).first, 'a');
+      await tester.enterText(find.byType(TextField).first, '');
+      expect(control.displayError, isNull); // not revealed while still focused
+
+      await tester.tap(find.byType(TextField).last); // moves focus away
+      await tester.pump();
+
+      expect(control.displayError, 'Required field');
     });
   });
 }

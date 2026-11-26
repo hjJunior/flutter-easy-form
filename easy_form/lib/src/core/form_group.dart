@@ -79,7 +79,7 @@ abstract class FormGroup<T, TRoot> extends FormNode<T> {
   /// needs to be correct, not just buildable:
   ///
   /// ```dart
-  /// form.validate();
+  /// await form.validate();
   /// if (form.valid) {
   ///   final model = form.toValue();
   ///   // ...
@@ -98,8 +98,5 @@ abstract class FormGroup<T, TRoot> extends FormNode<T> {
   List<ValidationError> validateSelf() => const [];
 
   @override
-  List<ValidationError> get errors {
-    if (disabled) return const [];
-    return [...childrenErrors, ...validateSelf()];
-  }
+  List<ValidationError> get ownErrors => validateSelf();
 }
