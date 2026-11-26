@@ -139,6 +139,36 @@ void main() {
       expect(form.contacts[0].valid, isTrue);
     });
 
+    test('validationErrors keeps each error tied to the node that reported it', () {
+      final form = ArenaForm();
+      form.international.value = true;
+      form.contacts.add();
+      // form.name, contacts[0].name and contacts[0].email are all left empty
+
+      final map = form.validationErrors;
+
+      expect(map[form], [
+        const ValidationError(
+          'An international arena must have a name',
+          code: 'international_arena_requires_name',
+        ),
+      ]); // contacts.length is 1 now, so the "requires a contact" rule no longer fires
+
+      expect(
+        map[form.contacts[0].name],
+        [const ValidationError('Required field', code: 'required')],
+      );
+
+      expect(map[form.contacts[0]], [
+        const ValidationError(
+          'Email is required for contacts of international arenas',
+          code: 'email_required_for_international_arena',
+        ),
+      ]);
+
+      expect(map.containsKey(form.contacts), isFalse); // no error of its own to report
+    });
+
     test('the root group\'s context points to itself and is stable across reads', () {
       final form = ArenaForm();
       expect(form.context.root, same(form));

@@ -10,5 +10,5 @@ typedef Validator<T> = ValidationError? Function(T value);
 
 /// Like [Validator], but for a check that can't complete synchronously
 /// (e.g. asking an API whether a username is taken). Only [FormControl]
-/// runs these, surfacing [FormControl.pending] while they're in flight.
+/// runs these, surfacing [FormControl.validating] while they're in flight.
 typedef AsyncValidator<T> = Future<ValidationError?> Function(T value);

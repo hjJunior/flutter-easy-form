@@ -18,6 +18,11 @@ void main() {
       expect(Validators.maxLength(3)('abc'), isNull);
     });
 
+    test('exactLength', () {
+      expect(Validators.exactLength(15)('(11) 1234-5678'), isNotNull);
+      expect(Validators.exactLength(15)('(11) 91234-5678'), isNull);
+    });
+
     test('min and max', () {
       expect(Validators.min(10)(5), isNotNull);
       expect(Validators.min(10)(10), isNull);

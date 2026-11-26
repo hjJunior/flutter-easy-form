@@ -95,9 +95,10 @@ class _ArenaFormScreenState extends State<ArenaFormScreen> {
                 ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () {
-                  form.validate();
-                  if (form.valid) {
+                onPressed: () async {
+                  await form.validate(); // awaits any async validator in the tree
+                  if (!context.mounted) return;
+                  if (form.canSubmit) {
                     final Arena arena = form.toValue();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Arena "${arena.name}" criada com sucesso')),
@@ -156,11 +157,9 @@ class _BoundTextFieldState extends State<_BoundTextField>
 
   @override
   Widget build(BuildContext context) {
-    final error = control.touched && control.invalid ? control.errors.first.message : null;
-
     return TextField(
       controller: textController,
-      decoration: InputDecoration(labelText: widget.label, errorText: error),
+      decoration: InputDecoration(labelText: widget.label, errorText: control.displayError),
       onChanged: (value) => control.value = value,
       onTapOutside: (_) => control.markAsTouched(),
     );

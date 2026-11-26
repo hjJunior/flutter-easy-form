@@ -38,6 +38,15 @@ class Validators {
     };
   }
 
+  static Validator<String> exactLength(int length) {
+    return (value) {
+      if (value.length != length) {
+        return ValidationError('Must be exactly $length characters long', code: 'exactLength');
+      }
+      return null;
+    };
+  }
+
   static Validator<num> min(num min) {
     return (value) {
       if (value < min) {

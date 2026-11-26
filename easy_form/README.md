@@ -43,19 +43,34 @@ if (form.valid) {
   override `validateSelf()` to validate fields against each other.
 - **`FormArray<T, C>`** — an ordered, dynamic collection of controls or
   groups: `add()`, `insert(index)`, `removeAt(index)`, `move(from, to)`.
-- **`Validators`** — `required`, `minLength`, `maxLength`, `min`,
-  `max`, `email`, `pattern`, `custom`.
+- **`Validators`** — `required`, `minLength`, `maxLength`, `exactLength`,
+  `min`, `max`, `email`, `pattern`, `custom`.
 
 Every node exposes `value`, `valid`/`invalid`, `errors`, `dirty`/`pristine`,
 `touched`/`untouched`, `enabled`/`disabled`, `reset()` and is itself a
 `Listenable` (`ChangeNotifier`) — listen to the root form and rebuild your
 widgets when anything in the tree changes.
 
+`errors` already includes every descendant's errors (a `FormGroup`'s or
+`FormArray`'s own, flattened together with its children's). Two more
+specific ways to read errors:
+
+- **`displayError`** — a node's own first error (`ownErrors`, not a
+  descendant's), but only once it's `touched`; otherwise `null`. The
+  "show one message after the user interacts" convention most field
+  widgets want, e.g. `TextField(decoration: InputDecoration(errorText: control.displayError))`.
+- **`validationErrors`** — every error anywhere in the subtree, as a
+  `Map<FormNode<Object?>, List<ValidationError>>` keyed by the node
+  that reported it directly, for a form-level error summary that needs
+  to know which field each message belongs to.
+
 `toValue()` is best-effort: it doesn't check `valid` and never throws, so
 an invalid or incomplete form still builds *a* model (a required field
 left empty contributes `''`, for instance). Check `valid` yourself first
 if the result needs to be correct, not just buildable — see the "Salvar"
-button in `example/lib/main.dart`.
+button in `example/lib/main.dart`, and "Awaiting validation before you
+submit" below for why `await form.validate()` is what actually makes
+`valid` trustworthy when async validators are involved.
 
 ## Dynamic arrays
 
@@ -131,13 +146,44 @@ final username = FormControl<String>(
 ```
 
 They run on construction, whenever the control's value changes, on
-`reset()`, and on `validate()`. `pending` is true while one is in
+`reset()`, and on `validate()`. `validating` is true while one is in
 flight (it aggregates up through groups and arrays, same as `dirty` and
 `touched`); `errors` only gains the async result once it resolves —
-`valid`/`invalid` aren't affected by `pending` itself, only by what
+`valid`/`invalid` aren't affected by `validating` itself, only by what
 ends up in `errors`. A result that arrives after a newer run has
 already started (the value changed again, or the control reset, before
 it resolved) is discarded — it no longer matches the live value.
+
+### Awaiting validation before you submit
+
+`valid` is a snapshot: on a quiet form nobody has touched yet, it's
+`true` even if an async check would eventually say otherwise. For an
+actual guarantee, `await` the tree's `validate()` — it marks everything
+touched and, recursively, waits for every async validator anywhere in
+it to settle:
+
+```dart
+await form.validate();
+if (form.canSubmit) {
+  final model = form.toValue();
+  // ...
+}
+```
+
+`canSubmit` is the submit-button-ready signal: `valid && !validating &&
+!hasFailedValidation`. Checking `valid` alone isn't enough, because it
+says nothing about a check still in flight.
+
+### When an async validator itself fails
+
+A validator that throws or times out (wrap it in `.timeout(...)` for
+that) doesn't become a `ValidationError` — that would read as "this
+value is wrong", when really it's that the check couldn't run.
+Instead, it sets `hasFailedValidation` (aggregating through the tree
+like `validating` does), meant to drive one form-level banner —
+"Some checks couldn't run, try again" — rather than a per-field
+message. It also blocks `canSubmit`. The next value change, `reset()`,
+or `validate()` call gives the check another chance.
 
 ## Cross-field validation, including against the root form
 

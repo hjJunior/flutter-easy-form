@@ -55,6 +55,24 @@ void main() {
       expect(control.valid, isTrue);
     });
 
+    test('displayError is null until touched, then the first error', () {
+      final control = FormControl<String>(
+        initialValue: '',
+        validators: [Validators.required, Validators.minLength(3)],
+      );
+
+      expect(control.displayError, isNull); // invalid, but not touched yet
+
+      control.markAsTouched();
+      expect(control.displayError, 'Required field');
+
+      control.value = 'ab';
+      expect(control.displayError, 'Must be at least 3 characters long');
+
+      control.value = 'abc';
+      expect(control.displayError, isNull);
+    });
+
     test('reset restores the initial value, pristine and untouched', () {
       final control = FormControl<String>(initialValue: 'a');
       control.value = 'b';

@@ -7,7 +7,7 @@ import '../validation/validation_error.dart';
 /// Centralizes state (dirty/touched/enabled), validation, reset and the
 /// parent/child wiring used to bubble change notifications up the tree.
 /// Subclasses never need to re-implement that plumbing: they only provide
-/// [value], [errors] and, when they have descendants, [children].
+/// [value], [ownErrors] and, when they have descendants, [children].
 abstract class FormNode<T> extends ChangeNotifier {
   bool _ownDirty = false;
   bool _ownTouched = false;
@@ -17,12 +17,35 @@ abstract class FormNode<T> extends ChangeNotifier {
   /// The current typed value held by this node.
   T get value;
 
-  /// Validation errors for this node. Implementations decide whether that
-  /// includes descendants (groups/arrays do, via [childrenErrors]).
-  List<ValidationError> get errors;
+  /// This node's own errors, not counting any descendant's — what
+  /// [FormControl] gets from its validators, [FormGroup] from
+  /// `validateSelf()`, [FormArray] from its own list-level validators.
+  /// Empty by default.
+  List<ValidationError> get ownErrors => const [];
+
+  /// [ownErrors] plus every descendant's own errors, or none while
+  /// [disabled]. This is almost always what you want to check a node's
+  /// validity; use [ownErrors] (or [validationErrors], to keep each
+  /// error tied to the node that reported it) when you need to tell a
+  /// node's own errors apart from its descendants'.
+  List<ValidationError> get errors {
+    if (disabled) return const [];
+    return [...childrenErrors, ...ownErrors];
+  }
 
   bool get valid => errors.isEmpty;
   bool get invalid => !valid;
+
+  /// This node's own first error (see [ownErrors]), once it's been
+  /// [touched] — otherwise `null`. The "show one message, only after the
+  /// user has interacted" convention most field widgets want; read
+  /// [ownErrors] directly for anything more specific (e.g. every error
+  /// at once, or regardless of [touched]).
+  String? get displayError {
+    if (!touched) return null;
+    final errors = ownErrors;
+    return errors.isEmpty ? null : errors.first.message;
+  }
 
   /// Direct descendants of this node. Empty for leaf nodes such as
   /// [FormControl]. [FormGroup] and [FormArray] override this.
@@ -39,7 +62,26 @@ abstract class FormNode<T> extends ChangeNotifier {
   /// and arrays aggregate it from their descendants, the same way
   /// [dirty] and [touched] do. Not reflected by [valid]/[invalid] — an
   /// async error only shows up in [errors] once its validator resolves.
-  bool get pending => children.any((child) => child.pending);
+  /// See [canSubmit] for a submit-button-ready signal that does account
+  /// for it.
+  bool get validating => children.any((child) => child.validating);
+
+  /// Whether an async validator somewhere in this subtree threw or timed
+  /// out instead of resolving normally — the check itself failed, which
+  /// is different from it resolving to a [ValidationError]. Doesn't add
+  /// anything to [errors] (that would read as "this field's value is
+  /// wrong", when really it's that the check couldn't run); meant to
+  /// drive a single form-level banner instead. Aggregates through groups
+  /// and arrays the same way [validating] does.
+  bool get hasFailedValidation => children.any((child) => child.hasFailedValidation);
+
+  /// A submit-button-ready signal: every known error-free, and nothing
+  /// left to resolve. `true` on a quiet form nobody has touched yet;
+  /// `false` while [validating] or [hasFailedValidation] — a snapshot
+  /// can't promise what an in-flight (or failed) check would have said.
+  /// `await validate()` is what actually settles every async validator
+  /// in this subtree before you trust [valid].
+  bool get canSubmit => valid && !validating && !hasFailedValidation;
 
   bool get enabled => _enabled;
   bool get disabled => !_enabled;
@@ -58,10 +100,15 @@ abstract class FormNode<T> extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Forces revalidation to surface, i.e. marks the node as touched.
-  /// Sync errors are always computed live from [errors]; a [FormControl]
-  /// with async validators also (re-)runs them.
-  void validate() => markAsTouched();
+  /// Marks this node as touched and, for a [FormControl] with async
+  /// validators, (re-)runs and awaits them — recursively: the returned
+  /// future only resolves once every async validator anywhere in this
+  /// subtree has settled. That's the guarantee [canSubmit] itself can't
+  /// give as a synchronous snapshot.
+  Future<void> validate() async {
+    markAsTouched();
+    await Future.wait(children.map((child) => child.validate()));
+  }
 
   /// Restores this node (and every descendant) to its initial state:
   /// original value, `pristine`, `untouched`. Does not restore a
@@ -106,16 +153,38 @@ abstract class FormNode<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Every error anywhere in this subtree, keyed by the node that
+  /// reported it directly — unlike [errors], which already flattens a
+  /// [FormGroup]'s or [FormArray]'s descendants' errors into its own
+  /// list. Handy for a form-level error summary that needs to know which
+  /// field each message belongs to; a node with no error of its own
+  /// (including a [disabled] one) is left out.
+  Map<FormNode<Object?>, List<ValidationError>> get validationErrors {
+    final result = <FormNode<Object?>, List<ValidationError>>{};
+
+    void visit(FormNode<Object?> node) {
+      if (!node.disabled) {
+        final own = node.ownErrors;
+        if (own.isNotEmpty) result[node] = own;
+      }
+      for (final child in node.children) {
+        visit(child);
+      }
+    }
+
+    visit(this);
+    return result;
+  }
+
   /// Marks only this node (not descendants) as having a changed value.
   /// Called by [FormControl] when its value is set.
   @protected
   void markAsDirty() => _ownDirty = true;
 
-  /// Errors contributed by [children], or none while [disabled]. Handy for
-  /// [FormGroup] and [FormArray] to combine with their own validators.
+  /// Each direct child's own [errors] (which, for a child that is itself
+  /// a [FormGroup] or [FormArray], already includes its descendants').
   @protected
-  Iterable<ValidationError> get childrenErrors =>
-      disabled ? const [] : children.expand((child) => child.errors);
+  Iterable<ValidationError> get childrenErrors => children.expand((child) => child.errors);
 
   /// Adopts every not-yet-adopted direct child, cascading down the tree as
   /// each child's own listener is attached (see [addListener]).
