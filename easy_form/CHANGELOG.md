@@ -42,6 +42,10 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
   removes the controller plumbing around it.
 - No ready-made field widgets yet (no `TextFormControl`-the-widget, no
   array builders) — see the two helpers above and `example/lib/main.dart`.
+- The example app and the widget tests use `package:material_ui/material_ui.dart`
+  instead of the now-deprecated `package:flutter/material.dart` (the
+  library itself depends on neither — `FormControlWidget` and
+  `FormControlTextSync` only need `package:flutter/widgets.dart`).
 
 ## [0.0.1-rc] - Initial Release
 

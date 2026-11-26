@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_easy_form/flutter_easy_form.dart';
 
 import 'arena_form.dart';
