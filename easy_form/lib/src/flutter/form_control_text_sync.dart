@@ -9,12 +9,14 @@ import '../core/form_control.dart';
 /// around it.
 ///
 /// Implement [control] (typically `=> widget.control`); the mixin takes
-/// care of the rest on its own — [initState], [didUpdateWidget] and
-/// [dispose] are all handled here, including switching listeners if a
-/// later build passes a different control. It also owns [focusNode] and
-/// calls `control.handleUnfocus()` when the field loses focus, which is
-/// what the `onUnfocus`/`afterFirstUnfocus` validation modes need —
-/// pass it to your `TextField`'s `focusNode`:
+/// care of the rest on its own — [initState], [didChangeDependencies],
+/// [didUpdateWidget] and [dispose] are all handled here, including
+/// switching listeners if a later build passes a different control. It
+/// also owns [focusNode], and registers with the control so
+/// `control.handleUnfocus()` fires on blur (what `onUnfocus`/
+/// `afterFirstUnfocus` need), `control.requestFocus()` focuses the
+/// field, and `control.ensureVisible()` scrolls it into view when it
+/// has a scrollable ancestor:
 ///
 /// ```dart
 /// class _NameFieldState extends State<NameField> with FormControlTextSync<NameField> {
@@ -42,11 +44,8 @@ mixin FormControlTextSync<T extends StatefulWidget> on State<T> {
   /// matching it for the lifetime of this state.
   late final TextEditingController textController = TextEditingController(text: control.value);
 
-  /// Wired to call `control.handleUnfocus()` on blur, which the
-  /// `onUnfocus`/`afterFirstUnfocus` validation modes need to know about.
-  /// Pass it to your `TextField`'s `focusNode`. A custom field that
-  /// manages its own focus (a picker, say) doesn't need this at all —
-  /// it can call `control.handleUnfocus()` itself instead.
+  /// Pass this to your [TextField]'s `focusNode`. Owned here and
+  /// disposed automatically.
   late final FocusNode focusNode = FocusNode()..addListener(_handleFocusChange);
 
   FormControl<String>? _syncedControl;
@@ -58,20 +57,36 @@ mixin FormControlTextSync<T extends StatefulWidget> on State<T> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _registerEnsureVisible();
+  }
+
+  @override
   void didUpdateWidget(T oldWidget) {
     super.didUpdateWidget(oldWidget);
     _resync();
+    _registerEnsureVisible(); // control may have just changed
   }
 
   void _resync() {
     if (_syncedControl == control) return;
 
     _syncedControl?.removeListener(_onControlChanged);
+    _syncedControl?.attachRequestFocusCallback(null);
+
     _syncedControl = control;
     control.addListener(_onControlChanged);
+    control.attachRequestFocusCallback(focusNode.requestFocus);
     if (textController.text != control.value) {
       textController.text = control.value;
     }
+  }
+
+  void _registerEnsureVisible() {
+    control.attachEnsureVisibleCallback(
+      Scrollable.maybeOf(context) != null ? () => Scrollable.ensureVisible(context) : null,
+    );
   }
 
   void _onControlChanged() {
@@ -96,6 +111,8 @@ mixin FormControlTextSync<T extends StatefulWidget> on State<T> {
   @override
   void dispose() {
     _syncedControl?.removeListener(_onControlChanged);
+    control.attachRequestFocusCallback(null);
+    control.attachEnsureVisibleCallback(null);
     textController.dispose();
     focusNode.dispose();
     super.dispose();

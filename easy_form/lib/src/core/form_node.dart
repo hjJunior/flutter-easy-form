@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../validation/validation_error.dart';
@@ -15,6 +17,7 @@ abstract class FormNode<T> extends ChangeNotifier {
   bool _enabled = true;
   FormNode<Object?>? _parent;
   ValidationMode? _ownValidationMode;
+  Timer? _highlightTimer;
 
   /// The current typed value held by this node.
   T get value;
@@ -87,6 +90,28 @@ abstract class FormNode<T> extends ChangeNotifier {
 
   bool get enabled => _enabled;
   bool get disabled => !_enabled;
+
+  /// Whether [highlight] was called recently enough that its duration
+  /// hasn't elapsed yet. A bound field widget reads this in its own
+  /// `build` to flash/outline itself — the library draws nothing on its
+  /// own.
+  bool get isHighlighted => _highlightTimer != null;
+
+  /// Briefly marks this node as needing attention — e.g. it's where
+  /// `validate()` found an error that isn't currently visible, such as
+  /// a previous step of a multi-step form. Not tied to validation
+  /// specifically: call it whenever something should draw the user's
+  /// eye to this node. Notifies immediately, and again when [duration]
+  /// elapses and [isHighlighted] goes back to `false`. Calling it again
+  /// while already highlighted restarts the timer.
+  void highlight({Duration duration = const Duration(seconds: 2)}) {
+    _highlightTimer?.cancel();
+    _highlightTimer = Timer(duration, () {
+      _highlightTimer = null;
+      notifyListeners();
+    });
+    notifyListeners();
+  }
 
   /// The node that adopted this one, if any. A node belongs to at most one
   /// parent at a time.
@@ -265,6 +290,7 @@ abstract class FormNode<T> extends ChangeNotifier {
 
   @override
   void dispose() {
+    _highlightTimer?.cancel();
     for (final child in children) {
       child.dispose();
     }

@@ -11,3 +11,4 @@ export 'src/validation/validator.dart';
 export 'src/validation/validators.dart';
 export 'src/flutter/form_control_widget.dart';
 export 'src/flutter/form_control_text_sync.dart';
+export 'src/flutter/form_control_focus_sync.dart';

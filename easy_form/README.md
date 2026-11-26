@@ -221,6 +221,44 @@ like `validating` does), meant to drive one form-level banner —
 message. It also blocks `canSubmit`. The next value change, `reset()`,
 or `validate()` call gives the check another chance.
 
+## Bringing an invalid field into view
+
+`validate()` can fail on a field that isn't currently on screen — a
+previous step of a multi-step form, say. `validationErrors` already
+keys every error by the node that reported it, so you can act on each
+one directly; `FormControl` adds three primitives for that:
+
+```dart
+await form.validate();
+final invalid = form.validationErrors.keys;
+if (invalid.isNotEmpty) {
+  final node = invalid.first;
+  if (node is FormControl) node.requestAttention();
+}
+```
+
+- **`requestFocus()`** — focuses the field. If none is attached right
+  now (the field isn't mounted — a different step), the request is
+  kept and honored the moment one is, e.g. once you navigate there.
+- **`ensureVisible()`** — scrolls the field into view if it turns out
+  to have a scrollable ancestor; a no-op otherwise, rather than forcing
+  one true way to scroll (slivers, a bare `Column`, a `PageView`, ... all
+  behave differently). `FormControlTextSync`/`FormControlFocusSync`
+  detect this themselves (`Scrollable.maybeOf(context)`) and wire
+  `Scrollable.ensureVisible` when there is one; attach your own
+  callback instead if you need something else.
+- **`highlight([duration])`** (on every `FormNode`, not just
+  `FormControl`) — sets `isHighlighted` for a bit, then clears it on
+  its own. Read it in your field's `build` to flash or outline itself;
+  the library draws nothing by itself.
+
+`requestAttention()` is the three together, for the common case. Both
+`FormControlTextSync` and `FormControlFocusSync` (for a field with no
+`TextEditingController` — a picker, a dropdown, a button) wire
+`requestFocus`/`ensureVisible` automatically; see
+`example/lib/main.dart`, where tapping an error in the summary list
+jumps to the field that reported it.
+
 ## Cross-field validation, including against the root form
 
 A `FormGroup`'s own fields are validated together by overriding
@@ -340,11 +378,16 @@ or whatever a third-party package gives you, including masks via
   }
   ```
 
-See `example/lib/main.dart` for both in a real screen.
+- **`FormControlFocusSync<T>`** — the same idea as `FormControlTextSync`,
+  for a field with no `TextEditingController` (a picker, a dropdown, a
+  button). Owns `focusNode` and exposes `isFocused`; wires `handleUnfocus`/
+  `requestFocus`/`ensureVisible` the same way.
+
+See `example/lib/main.dart` for all three in a real screen.
 
 ## Status
 
-This is a `0.1.0-beta` rewrite. The core is typed end to end; `FormControlWidget`
-and `FormControlTextSync` cover the common plumbing for building your own
-field widgets, but the library doesn't ship ready-made fields yet (no
-`TextFormControl`-the-widget, no array builders).
+This is a `0.1.0-beta` rewrite. The core is typed end to end; `FormControlWidget`,
+`FormControlTextSync` and `FormControlFocusSync` cover the common plumbing
+for building your own field widgets, but the library doesn't ship
+ready-made fields yet (no `TextFormControl`-the-widget, no array builders).

@@ -99,5 +99,30 @@ void main() {
 
       expect(control.displayError, 'Required field');
     });
+
+    testWidgets('control.requestFocus() focuses the TextField', (tester) async {
+      final control = FormControl<String>(initialValue: '');
+      await tester.pumpWidget(_wrap(_Field(control: control)));
+
+      control.requestFocus();
+      await tester.pump();
+
+      final state = tester.state<_FieldState>(find.byType(_Field));
+      expect(state.focusNode.hasFocus, isTrue);
+    });
+
+    testWidgets('ensureVisible never throws, with or without a scrollable ancestor',
+        (tester) async {
+      final control = FormControl<String>(initialValue: '');
+
+      await tester.pumpWidget(_wrap(_Field(control: control))); // no scrollable
+      control.ensureVisible();
+      expect(tester.takeException(), isNull);
+
+      await tester.pumpWidget(_wrap(SingleChildScrollView(child: _Field(control: control))));
+      control.ensureVisible();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
   });
 }
