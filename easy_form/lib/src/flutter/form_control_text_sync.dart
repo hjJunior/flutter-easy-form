@@ -11,7 +11,10 @@ import '../core/form_control.dart';
 /// Implement [control] (typically `=> widget.control`); the mixin takes
 /// care of the rest on its own — [initState], [didUpdateWidget] and
 /// [dispose] are all handled here, including switching listeners if a
-/// later build passes a different control:
+/// later build passes a different control. It also owns [focusNode] and
+/// calls `control.handleUnfocus()` when the field loses focus, which is
+/// what the `onUnfocus`/`afterFirstUnfocus` validation modes need —
+/// pass it to your `TextField`'s `focusNode`:
 ///
 /// ```dart
 /// class _NameFieldState extends State<NameField> with FormControlTextSync<NameField> {
@@ -22,13 +25,10 @@ import '../core/form_control.dart';
 ///   Widget build(BuildContext context) {
 ///     return TextField(
 ///       controller: textController,
-///       decoration: InputDecoration(
-///         labelText: 'Name',
-///         errorText: control.touched && control.invalid ? control.errors.first.message : null,
-///       ),
+///       focusNode: focusNode,
+///       decoration: InputDecoration(labelText: 'Name', errorText: control.displayError),
 ///       enabled: control.enabled,
 ///       onChanged: (value) => control.value = value,
-///       onTapOutside: (_) => control.markAsTouched(),
 ///     );
 ///   }
 /// }
@@ -41,6 +41,13 @@ mixin FormControlTextSync<T extends StatefulWidget> on State<T> {
   /// a [TextEditingController]). Seeded with [control]'s value, and kept
   /// matching it for the lifetime of this state.
   late final TextEditingController textController = TextEditingController(text: control.value);
+
+  /// Wired to call `control.handleUnfocus()` on blur, which the
+  /// `onUnfocus`/`afterFirstUnfocus` validation modes need to know about.
+  /// Pass it to your `TextField`'s `focusNode`. A custom field that
+  /// manages its own focus (a picker, say) doesn't need this at all —
+  /// it can call `control.handleUnfocus()` itself instead.
+  late final FocusNode focusNode = FocusNode()..addListener(_handleFocusChange);
 
   FormControl<String>? _syncedControl;
 
@@ -80,10 +87,17 @@ mixin FormControlTextSync<T extends StatefulWidget> on State<T> {
     if (mounted) setState(() {});
   }
 
+  void _handleFocusChange() {
+    if (!focusNode.hasFocus) {
+      control.handleUnfocus();
+    }
+  }
+
   @override
   void dispose() {
     _syncedControl?.removeListener(_onControlChanged);
     textController.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 }

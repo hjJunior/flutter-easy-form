@@ -59,7 +59,7 @@ void main() {
       final control = FormControl<String>(
         initialValue: '',
         validators: [Validators.required, Validators.minLength(3)],
-      );
+      )..setValidationMode(ValidationMode.onUserInteraction); // keeps tracking live after touched
 
       expect(control.displayError, isNull); // invalid, but not touched yet
 

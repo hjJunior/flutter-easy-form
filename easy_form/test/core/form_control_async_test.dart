@@ -43,10 +43,12 @@ void main() {
       final control = FormControl<String>(
         initialValue: '',
         asyncValidators: [(value) => completers[call++].future],
-      );
-      // construction consumed completers[0]
+        asyncValidationDebounce: Duration.zero,
+      )..setValidationMode(ValidationMode.onUserInteraction);
+      // construction consumed completers[0] (run 1)
 
-      control.value = 'b'; // consumes completers[1], supersedes the first run
+      control.value = 'b'; // schedules run 2 after the (zero) debounce
+      await Future<void>.delayed(Duration.zero); // let it fire, consuming completers[1]
 
       // Resolve the stale first run after the second has already started.
       completers[0].complete(const ValidationError('stale', code: 'stale'));
@@ -71,11 +73,13 @@ void main() {
       final control = FormControl<String>(
         initialValue: 'a',
         asyncValidators: [(value) => completers[call++].future],
-      );
+        asyncValidationDebounce: Duration.zero,
+      )..setValidationMode(ValidationMode.onUserInteraction);
       // run 1 (construction, value 'a') is validating
 
-      control.value = 'b'; // run 2, supersedes run 1
-      control.reset(); // back to 'a', run 3, supersedes run 2
+      control.value = 'b'; // schedules run 2
+      await Future<void>.delayed(Duration.zero); // run 2 starts, consuming completers[1]
+      control.reset(); // back to 'a', run 3 (immediate, no debounce), supersedes run 2
 
       completers[0].complete(const ValidationError('from run 1', code: 'run1'));
       completers[1].complete(const ValidationError('from run 2', code: 'run2'));
@@ -135,7 +139,7 @@ void main() {
 
       shouldThrow = false;
       control.value = 'retry';
-      await Future<void>.delayed(Duration.zero);
+      await control.validate(); // forces a fresh run regardless of validation mode
 
       expect(control.hasFailedValidation, isFalse);
       expect(control.canSubmit, isTrue);

@@ -24,7 +24,9 @@ class MyApp extends StatelessWidget {
 /// together with the two Flutter-facing helpers: [FormControlWidget] for a
 /// field with no extra resources to manage ([_InternationalSwitch]), and
 /// [FormControlTextSync] for one that owns a [TextEditingController]
-/// ([_BoundTextField]).
+/// ([_BoundTextField]). The form's `validationMode` is set to `onUnfocus`,
+/// so a field's error only shows up after you leave it, not on every
+/// keystroke — try it.
 class ArenaFormScreen extends StatefulWidget {
   const ArenaFormScreen({super.key});
 
@@ -33,7 +35,7 @@ class ArenaFormScreen extends StatefulWidget {
 }
 
 class _ArenaFormScreenState extends State<ArenaFormScreen> {
-  final form = ArenaForm();
+  final form = ArenaForm()..setValidationMode(ValidationMode.onUnfocus);
 
   @override
   void dispose() {
@@ -159,9 +161,9 @@ class _BoundTextFieldState extends State<_BoundTextField>
   Widget build(BuildContext context) {
     return TextField(
       controller: textController,
+      focusNode: focusNode,
       decoration: InputDecoration(labelText: widget.label, errorText: control.displayError),
       onChanged: (value) => control.value = value,
-      onTapOutside: (_) => control.markAsTouched(),
     );
   }
 }

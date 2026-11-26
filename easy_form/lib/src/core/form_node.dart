@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../validation/validation_error.dart';
+import '../validation/validation_mode.dart';
 
 /// Base contract shared by [FormControl], [FormGroup] and [FormArray].
 ///
@@ -13,6 +14,7 @@ abstract class FormNode<T> extends ChangeNotifier {
   bool _ownTouched = false;
   bool _enabled = true;
   FormNode<Object?>? _parent;
+  ValidationMode? _ownValidationMode;
 
   /// The current typed value held by this node.
   T get value;
@@ -89,6 +91,26 @@ abstract class FormNode<T> extends ChangeNotifier {
   /// The node that adopted this one, if any. A node belongs to at most one
   /// parent at a time.
   FormNode<Object?>? get parent => _parent;
+
+  /// When a [FormControl] reveals its errors and runs its async
+  /// validators: this node's own mode if it has set one, otherwise
+  /// [parent]'s (recursively), otherwise [ValidationMode.manual]. Set a
+  /// form-wide default on the root with [setValidationMode]; a single
+  /// control can override it the same way.
+  ///
+  /// Relies on [parent], which [ensureChildrenAdopted] only sets up on
+  /// first listen — in practice always true by the time this matters,
+  /// since something in the widget tree (a `ListenableBuilder`, a
+  /// `FormControlWidget`, ...) already listens to the root before the
+  /// user can interact with any field.
+  ValidationMode get validationMode =>
+      _ownValidationMode ?? parent?.validationMode ?? ValidationMode.manual;
+
+  /// Sets this node's own [validationMode], inherited by every
+  /// descendant that hasn't set its own.
+  void setValidationMode(ValidationMode mode) {
+    _ownValidationMode = mode;
+  }
 
   /// Marks this node (and every descendant) as touched, then notifies
   /// listeners so the UI can reveal validation errors.
@@ -180,6 +202,13 @@ abstract class FormNode<T> extends ChangeNotifier {
   /// Called by [FormControl] when its value is set.
   @protected
   void markAsDirty() => _ownDirty = true;
+
+  /// Hides this node's own revealed error without touching descendants
+  /// and without notifying — used by [FormControl]'s validation-mode
+  /// logic (e.g. `manual`/`onUnfocus` go quiet again after an edit,
+  /// until the next check); the caller already notifies.
+  @protected
+  void clearTouched() => _ownTouched = false;
 
   /// Each direct child's own [errors] (which, for a child that is itself
   /// a [FormGroup] or [FormArray], already includes its descendants').

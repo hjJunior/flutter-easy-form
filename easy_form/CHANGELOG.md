@@ -48,6 +48,17 @@ breaking change: the previous `EasyForm`/`EasyFormField` API (backed by
 - `FormNode.displayError`: a node's own first error, once it's
   `touched` — otherwise `null`. The "show one message after the user
   interacts" convention most field widgets want.
+- `ValidationMode` (`manual` — the default, `onUserInteraction`,
+  `onUnfocus`, `afterFirstUnfocus`): controls *when* a `FormControl`
+  reveals its errors and runs its async validators (debounced via
+  `asyncValidationDebounce` for the two "live" modes) — `errors`/`valid`
+  themselves stay always-live regardless. Inherited from the nearest
+  ancestor that called `FormNode.setValidationMode()`, defaulting to
+  `manual` at the root; any control can override it for itself.
+  `onUnfocus`/`afterFirstUnfocus` need `FormControl.handleUnfocus()`
+  called when the field loses focus — `FormControlTextSync` now owns a
+  `focusNode` and does this automatically; a custom field (a picker, a
+  dropdown) calls it itself.
 - `FormGroup.toValue()` is formally documented as best-effort: it never
   checks `valid` and never throws, so an invalid or incomplete form
   still builds *a* model.
